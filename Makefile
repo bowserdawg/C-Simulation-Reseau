@@ -15,7 +15,7 @@ DEP_DIR   := $(BUILD_DIR)/deps
  
 # Compiler & flags
 CC        := gcc
-CFLAGS    := -Wall -Wextra -Wpedantic -std=c2x -I$(INC_DIR)
+CFLAGS    := -Wall -Wextra -Wpedantic -g -std=c17 -I$(INC_DIR)
 LDFLAGS   :=   # Add linker flags here (e.g. -lm)
  
 # ==============================================================================
@@ -26,7 +26,7 @@ LDFLAGS   :=   # Add linker flags here (e.g. -lm)
 SRCS      := $(shell find $(SRC_DIR) -name '*.c')
  
 # Corresponding .o files under build/
-OBJS      := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
+OBJS      := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(S	RCS))
  
 # Corresponding .d dependency files under build/deps/
 DEPS      := $(patsubst $(SRC_DIR)/%.c, $(DEP_DIR)/%.d, $(SRCS))
