@@ -1,4 +1,5 @@
 
 
-void init_net_form_file();
+
+void init_net_from_file();
 void test();
