@@ -26,7 +26,7 @@ LDFLAGS   :=   # Add linker flags here (e.g. -lm)
 SRCS      := $(shell find $(SRC_DIR) -name '*.c')
  
 # Corresponding .o files under build/
-OBJS      := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(S	RCS))
+OBJS      := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
  
 # Corresponding .d dependency files under build/deps/
 DEPS      := $(patsubst $(SRC_DIR)/%.c, $(DEP_DIR)/%.d, $(SRCS))
