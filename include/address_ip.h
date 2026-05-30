@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <errors.h>
 
 typedef int32_t address_ip_t; 
 typedef unsigned char octet_ip_t;
@@ -17,6 +19,11 @@ typedef unsigned char octet_ip_t;
  */
 struct ip {
     address_ip_t ip;
+};
+
+struct optional_ip {
+    struct ip ip;
+    int exit_code;
 };
 
 /**
@@ -59,4 +66,15 @@ int ip_to_string(char** string, struct ip ip);
  * envoie -1 pour un octet invalid.
  * 
  */
-int getOctet(struct ip ip, unsigned int octet);
+int ip_get_octet(struct ip ip, unsigned int octet);
+
+/**
+ * Donne l'adresse ip avec l'aide d'une chaine terminé
+ * par une caractére de fin de chaine.
+ * 
+ * La chaine de l'ip doit etre delimité par des points comme ceci:
+ *      12.78.12.17
+ * 
+ * Peut choisir la base.
+ */
+struct optional_ip ip_from_string(const char* ip_string);
