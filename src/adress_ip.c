@@ -1,4 +1,5 @@
 #include "address_ip.h" // Contient address_ip_t et octet_ip_t et OCTET_IP
+#include "errors.h"     // Pour les messages d'erreur
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,12 +52,11 @@ struct ip init_ip(octet_ip_t o1, octet_ip_t o2, octet_ip_t o3, octet_ip_t o4)
  * Donne un octet specifique d'une adresse.
  * 
  * envoie -1 pour un octet invalid.
- * 
  */
 int getOctet(struct ip ip, unsigned int octet)
 {
     if(octet >= OCTET_MAXIMUM)
-        return -1;
+        return ERR_INVALID_OCTET_PARAM;
 
     return _getOctet(ip.ip, octet * 8);
 }
@@ -83,6 +83,6 @@ int ip_to_string(char** string, struct ip ip)
     *string = calloc(IP_STRING_MAX_SIZE, sizeof(char));
 
     // Ecrit sur le buffer l'adress ip.
-    return snprintf(*string, IP_STRING_MAX_SIZE, "%d.%d.%d.%d", o1, o2, o3, o4);
     // Vu qu'on à utilisé calloc, le terminateur null existe deja! C'est pratique.
+    return snprintf(*string, IP_STRING_MAX_SIZE, "%d.%d.%d.%d", o1, o2, o3, o4);
 }
