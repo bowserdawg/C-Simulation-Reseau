@@ -11,10 +11,11 @@
 // Avec le le null terminator.
 #define IP_STRING_MAX_SIZE 16
 
-struct ip {
-    address_ip_t _ip;
-};
+#define MAX_OCTET_VALUE 255
 
+/**
+ * Si on veut obtenir la valeur d'un seul octet spécifique il faut faire un shift.
+ */
 enum OCTET_SHIFT
 {
     SHIFT_OCTET_1 = 0,
@@ -34,35 +35,43 @@ enum OCTET_SHIFT
  * o1 => plus grand octet
  * o4 => plus petit octet
  */
-struct ip* init_ip(octet_ip_t o1, octet_ip_t o2, octet_ip_t o3, octet_ip_t o4)
+struct ip init_ip(octet_ip_t o1, octet_ip_t o2, octet_ip_t o3, octet_ip_t o4)
 {
     address_ip_t ip_int = 0;
+
     encodeOctet(ip_int, o1, SHIFT_OCTET_1);
     encodeOctet(ip_int, o2, SHIFT_OCTET_2);
     encodeOctet(ip_int, o3, SHIFT_OCTET_3);
     encodeOctet(ip_int, o4, SHIFT_OCTET_4);
 
-    struct ip* ip = calloc(1, sizeof(struct ip));
-    ip->_ip = ip_int;
-    return ip;
+    return (struct ip){ip_int};
 }
 
-void deinit_ip(struct ip** ip)
+/**
+ * Donne un octet specifique d'une adresse.
+ * 
+ * envoie -1 pour un octet invalid.
+ * 
+ */
+int getOctet(struct ip ip, unsigned int octet)
 {
-    free(*ip);
+    if(octet >= OCTET_MAXIMUM)
+        return -1;
+
+    return _getOctet(ip.ip, octet * 8);
 }
 
 /**
  * Transforme une adresse ip en string.
  * 
  * Pas besoin d'allouer de l'espece de string. 
- * Il faut free le pointer string changé par la fonction.
+ * Il faut free le pointer string donné par la fonction.
  * 
  * Renvoie le nombre d'octet écrit.
  */
-int ip_to_string(char** string, struct ip* ip)
+int ip_to_string(char** string, struct ip ip)
 {
-    int val = ip->_ip;
+    int val = ip.ip;
 
     // Les octets
     octet_ip_t o1 = _getOctet(val, SHIFT_OCTET_1);
@@ -76,15 +85,4 @@ int ip_to_string(char** string, struct ip* ip)
     // Ecrit sur le buffer l'adress ip.
     return snprintf(*string, IP_STRING_MAX_SIZE, "%d.%d.%d.%d", o1, o2, o3, o4);
     // Vu qu'on à utilisé calloc, le terminateur null existe deja! C'est pratique.
-}
-
-
-/**
- * Donne un octet specifique d'une adresse.
- * 
- * Utilise la notation big endian.
- */
-int getOctet(struct ip* ip, int nbOctet)
-{
-    return 1;
 }
