@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>  // Pour strtok
-#include <arpa/inet.h> // Pour la notation big endian.
-
 
 #define OCTET 0b11111111
 #define IP_OCTET_1 0b00000000000000000000000011111111
@@ -57,15 +55,24 @@ struct ip init_ip(octet_ip_t o1, octet_ip_t o2, octet_ip_t o3, octet_ip_t o4)
 /**
  * Donne un octet specifique d'une adresse.
  * 
- * peut renvoyer une valeur de enum EXIT_CODES
- * si le parametre est mal configuré car un octet d'ip doit etre non signé.
+ * Renvoie un optional IP avec la valeur le code d'erreur de sortie.
  */
-int ip_get_octet(struct ip ip, unsigned int octet)
+struct optional_octet ip_get_octet(struct ip ip, enum OCTET_IP octet)
 {
     if(octet >= OCTET_MAXIMUM)
-        return ERR_INVALID_OCTET_PARAM;
+    {
+        DEBUG_WARNING(ERR_INVALID_OCTET_PARAM);
+        return (struct optional_octet) {
+            0, 
+            ERR_INVALID_OCTET_PARAM
+        };
+    }
+    
 
-    return _getOctet(ip.ip, octet * 8);
+    return (struct optional_octet) {
+        _getOctet(ip.ip, octet * 8), 
+        SUCESS
+    };
 }
 
 /**
@@ -113,6 +120,7 @@ struct optional_ip ip_from_string(const char* ip_string)
 
     if(ip_string == NULL)
     {
+        DEBUG_WARNING(ERROR_NULL_STRING_PARAM);
         ex_code = ERROR_NULL_STRING_PARAM;
         goto end;
     }
@@ -131,11 +139,11 @@ struct optional_ip ip_from_string(const char* ip_string)
     int count = 0;
     while (token) 
     {
-        printf("token : %s\n", token);
         // Si le nombre de token est plus que 3 et on est encore
         // dans la boucle, il y'a une erreur.
         if (count > OCTET_ASCII_MAX_SIZE)
         {
+            DEBUG_WARNING(ERROR_INVALID_STRING_FORMAT);
             ex_code = ERROR_INVALID_STRING_FORMAT;
             goto end;
         }
@@ -145,7 +153,8 @@ struct optional_ip ip_from_string(const char* ip_string)
         // Si c'est beaucoup trop grand, il y'a une erreur.
         if(octet > MAX_OCTET_VALUE)
         {
-            ex_code = ERROR_INVALID_STRING_FORMAT;
+            DEBUG_WARNING(ERROR_INVALID_strtoul);
+            ex_code = ERROR_INVALID_strtoul;
             goto end;
         }
 
@@ -159,6 +168,7 @@ struct optional_ip ip_from_string(const char* ip_string)
     // A la fin, il doit y'avoir 4 iteration en tout si c'est une adresse ip.
     if(count != 4)
     {
+        DEBUG_WARNING(ERROR_INVALID_STRING_FORMAT);
         ex_code = ERROR_INVALID_STRING_FORMAT;
     }
 

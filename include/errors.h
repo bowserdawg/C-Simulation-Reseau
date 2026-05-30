@@ -5,10 +5,8 @@
 /**
  * Attention : tous les fonctions ne peuvent pas utliser ce enum.
  * 
- * Si une fonction peut renvoyer un entier negatif
- * utilisable normalement il ne devrait
- * pas utiliser ce systeme, il devrait utiliser un optional à la place
- * ou renvoyer -1;
+ * Si une fonction DOIT renvoyer un entier utilisable normalement il ne devrait
+ * pas utiliser ce systeme, il devrait utiliser un optional à la place ou renvoyer -1;
  */
 enum EXIT_CODES
 {
@@ -16,16 +14,39 @@ enum EXIT_CODES
     ERR_INVALID_OCTET_PARAM = -255,
     ERR_NULL_FILE,
     ERROR_INVALID_STRING_FORMAT,
-    ERROR_INVALID_strtol,
+    ERROR_INVALID_strtoul,
     ERROR_NULL_STRING_PARAM,
 };
 
 /**
- * Affiche un message et return false s'il ya une erreur.
+ * Renvoie un booleen false s'il y'a une erreur et 
+ * print l'endroit ou l'erreur est arriver.
  */
-bool error_handler(enum EXIT_CODES exit_code);
+bool error_diagnostic(enum EXIT_CODES exit_code, 
+    const char* file, const char* func, int line);
 
 /**
- * Affiche un message et crash le programme si le code de sortie donné donne une erreur.
+ * Crash s'il y'a une erreur et 
+ * print l'endroit ou l'erreur est arriver
  */
-void error_handler_crash(enum EXIT_CODES exit_code);
+void error_diagnostic_abort(enum EXIT_CODES exit_code, 
+    const char* file, const char* func, int line);
+
+/**
+ * Renvoie un booleen false s'il y'a un warning et 
+ * print l'endroit ou le warning est arriver.
+ */
+bool error_warning_diagnostic(enum EXIT_CODES exit_code, 
+    const char* file, const char* func, int line);
+
+#ifdef DEBUG
+    #define DEBUG_WARNING(ERR_CODE) error_warning_diagnostic(ERR_CODE, __FILE__, __func__, __LINE__)
+    #define DEBUG_SHOW_ERR_LOCATION error_show_error_location(__FILE__, __func__, __LINE__)
+    #define DEBUG_SHOW_IF_ERREUR(ERR_CODE) error_diagnostic(ERR_CODE, __FILE__, __func__, __LINE__)
+    #define DEBUG_ABORT_IF_ERREUR(ERR_CODE) error_diagnostic_abort(ERR_CODE, __FILE__, __func__, __LINE__)
+#else
+    #define DEBUG_WARNING(ERR_CODE) ((void)0)
+    #define DEBUG_SHOW_ERR_LOCATION ((void)0)
+    #define DEBUG_SHOW_IF_ERREUR(ERR_CODE) true 
+    #define DEBUG_ABORT_IF_ERREUR(ERR_CODE) ((void)0)
+#endif

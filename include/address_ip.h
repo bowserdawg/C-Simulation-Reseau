@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <errors.h>
+#include "errors.h"
 
 typedef int32_t address_ip_t; 
 typedef unsigned char octet_ip_t;
@@ -23,7 +23,12 @@ struct ip {
 
 struct optional_ip {
     struct ip ip;
-    int exit_code;
+    enum EXIT_CODES exit_code;
+};
+
+struct optional_octet {
+    octet_ip_t octet;
+    enum EXIT_CODES exit_code;
 };
 
 /**
@@ -63,10 +68,9 @@ int ip_to_string(char** string, struct ip ip);
 /**
  * Donne un octet specifique d'une adresse.
  * 
- * envoie -1 pour un octet invalid.
- * 
+ * Renvoie un optional IP avec la valeur le code d'erreur de sortie.
  */
-int ip_get_octet(struct ip ip, unsigned int octet);
+struct optional_octet ip_get_octet(struct ip ip, enum OCTET_IP octet);
 
 /**
  * Donne l'adresse ip avec l'aide d'une chaine terminé
