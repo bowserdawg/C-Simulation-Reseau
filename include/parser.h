@@ -1,3 +1,4 @@
+#pragma once
 #include "network.h"
 
 void init_net_from_file();
