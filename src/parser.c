@@ -1,4 +1,6 @@
 #include "../include/network.h"
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,15 +23,49 @@ typedef enum type_appareil {
 
 static type_appareil get_type(char type) { return strtol(&type, NULL, 10); }
 
+void display_mac(struct mac *mac) {
+  char mac_string[SIZE_MAC_STRING];
+  for (size_t i = 0; i < 6; i++) {
+    printf("%02X:", mac->mac_array[i]);
+    if (i == 5) {
+      printf("%02X\n", mac->mac_array[i]);
+    }
+  }
+}
+
+void display_ip(ip *ip) {
+  for (size_t i = 0; i < 4; i++) {
+    uint8_t byte = (*ip) >> i * 8;
+    printf("%d.", byte);
+  }
+  printf("\n");
+}
+
 static struct mac get_mac(char *mac_string) {
+  // on initialise une struct de mac vide
   struct mac mac = {{0, 0, 0, 0, 0, 0}};
 
-  // à corriger
-  //   for (size_t i = 0; i < SIZE_MAC_STRING - 3; i += 3) {
-  //     char byte_string[2];
-  //     sprintf(byte_string, mac_string + i, 2);
-  //     printf("string %s\n", byte_string);
-  //   }
+  size_t byteIndex = 0;
+  // on parcours les char de la ligne pour récuperer le mac
+  // on utilise SIZE_MAC_STRING parce que le mac est toujours de la même taille
+  // (6 octet)
+  for (size_t i = 0; i < SIZE_MAC_STRING; i += 3) {
+
+    // on initialise un tableau de 3 char pour les 2 char de l'octet en hexa et
+    // le char de fin '\0'
+    char byte_string[3];
+
+    // on recupère les deux lettres en hexa
+    strncpy(byte_string, mac_string + i, 2);
+    // on ajoute le char de fin de chaine
+    byte_string[2] = '\0';
+
+    // on ajoute le byte dans la struct
+    mac.mac_array[byteIndex] = (uint8_t)strtol(byte_string, NULL, 16);
+
+    byteIndex++;
+  }
+  display_mac(&mac);
 
   return mac;
 }
