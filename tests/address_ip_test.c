@@ -25,10 +25,13 @@ void test_ip()
     DEBUG_ASSERT_W_MESSAGE(ip_str1 != NULL, "FAIL ip_str1 is null.\n");
     DEBUG_ASSERT_W_MESSAGE(ip_str2 != NULL, "FAIL ip_str2 is null.\n");
 
-    DEBUG_ASSERT_W_MESSAGE(strcmp(ip_str1, ip_str2) == 0, "FAIL both strings aren't similar\n");
+    DEBUG_ASSERT_W_MESSAGE(strcmp(ip_str1, ip_str2) == 0, "FAIL both ip strings aren't similar\n");
+
+    struct optional_ip ip3 = ip_from_string("17187.0");
+    DEBUG_ASSERT_W_MESSAGE(ip3.exit_code == ERROR_INVALID_STRING_FORMAT, "FAIL string format should be invalid.\n");
+    ip3 = ip_from_string(NULL);
+    DEBUG_ASSERT_W_MESSAGE(ip3.exit_code == ERROR_NULL_STRING_PARAM, "FAIL exit code 'ERROR_NULL_STRING_PARAM' ecpected.\n");
 
     free(ip_str1);
     free(ip_str2);
-
-    
 }

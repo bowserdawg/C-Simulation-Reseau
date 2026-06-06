@@ -3,13 +3,18 @@
 #include <stdint.h>
 #include "errors.h"
 
+#define MAC_NB_OCTET 6
 #define SIZE_MAC_STRING 17
 
 /* Type pour l adresse MAC sur 6 octets */
 struct mac{
-    uint8_t mac_array[6];
+    uint8_t mac_array[MAC_NB_OCTET];
 };
 
+struct optional_mac{
+    struct mac mac;
+    enum EXIT_CODES exit_code;
+};
 
 typedef uint8_t octet_mac_t;
 
@@ -26,3 +31,9 @@ struct mac mac_operation_and(struct mac mac, struct mac mask);
 struct mac mac_from_string(char *mac_string);
 
 enum EXIT_CODES mac_to_string(char** string, struct mac mac);
+
+/**
+ * Convertie une représentation en chaine de caractére d'une adresse mac 
+ * en struct optional_mac.
+ */
+struct optional_mac mac_from_str(const char* mac_str);

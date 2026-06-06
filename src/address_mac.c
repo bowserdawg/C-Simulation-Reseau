@@ -21,19 +21,24 @@ struct mac init_mac(octet_mac_t o1, octet_mac_t o2, octet_mac_t o3, octet_mac_t 
     };
 }
 
-void display_mac(struct mac mac) {
-  char mac_string[SIZE_MAC_STRING];
-  for (size_t i = 0; i < 6; i++) 
-  {
-    printf("%02X:", mac.mac_array[i]);
-    if (i == 5) 
+/**
+ * Ancienne fonction de Kevin.
+ */
+void display_mac(struct mac mac) 
+{
+    for (size_t i = 0; i < 6; i++) 
     {
-      printf("%02X\n", mac.mac_array[i]);
+        printf("%02X:", mac.mac_array[i]);
+        if (i == 5) 
+        {
+        printf("%02X\n", mac.mac_array[i]);
+        }
     }
-  }
 }
 
-// Doit etre free !!
+/**
+ * La chaine doit aprés etre free !!
+ **/
 enum EXIT_CODES mac_to_string(char** string, struct mac mac)
 {
     char* new_str = calloc(SIZE_MAC_STRING + 1, sizeof(char));
@@ -101,7 +106,36 @@ struct mac mac_from_string(char *mac_string) {
     mac.mac_array[byteIndex] = (uint8_t)strtol(byte_string, NULL, 16);
 
     byteIndex++;
-  }
+  }  
 
   return mac;
+}
+
+/**
+ * Convertie une représentation en chaine de caractére d'une adresse mac 
+ * en struct optional_mac.
+ */
+struct optional_mac mac_from_str(const char* mac_str)
+{
+    struct mac new_mac = {0};
+
+    if(mac_str == NULL)
+    {
+        DEBUG_WARNING(ERROR_NULL_STRING_PARAM);
+        return (struct optional_mac){new_mac, ERROR_NULL_STRING_PARAM};
+    }
+
+    // Pour sscanf, il faut utiliser des int, on ne peut pas utiliser des caracters.
+    uint32_t bytes[6];
+    if (sscanf(mac_str, "%02x:%02x:%02x:%02x:%02x:%02x",    // %02x -> valeur hexadecimal (int) avec 2 chiffre
+        &bytes[0], &bytes[1], &bytes[2],
+        &bytes[3], &bytes[4], &bytes[5]) == MAC_NB_OCTET)   // Va échouer si un mauvais format est donné.
+    {   
+        for (size_t i = 0; i < MAC_NB_OCTET; i++)
+            new_mac.mac_array[i] = (octet_mac_t)bytes[i]; // Cast en octet de mac (uint8)
+        return (struct optional_mac){new_mac, SUCESS};
+    }
+
+    DEBUG_WARNING(ERROR_INVALID_STRING_FORMAT);
+    return (struct optional_mac){new_mac, ERROR_INVALID_STRING_FORMAT};
 }

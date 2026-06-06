@@ -159,8 +159,8 @@ struct optional_ip ip_from_string(const char* ip_string)
         // Si c'est beaucoup trop grand, il y'a une erreur.
         if(octet > MAX_OCTET_VALUE)
         {
-            DEBUG_WARNING(ERROR_INVALID_strtoul);
-            ex_code = ERROR_INVALID_strtoul;
+            DEBUG_WARNING(ERROR_INVALID_STRING_FORMAT);
+            ex_code = ERROR_INVALID_STRING_FORMAT;
             goto end;
         }
 
