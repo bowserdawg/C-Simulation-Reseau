@@ -3,6 +3,8 @@
 #include <stdbool.h>
 
 /**
+ * Les codes de sorties d'erreur ne peuvent que etre negative.
+ * 
  * Attention : tous les fonctions ne peuvent pas utliser ce enum.
  * 
  * Si une fonction DOIT renvoyer un entier utilisable normalement il ne devrait
@@ -20,13 +22,6 @@ enum EXIT_CODES
 };
 
 /**
- * Renvoie un booleen false s'il y'a une erreur et 
- * print l'endroit ou l'erreur est arriver.
- */
-bool error_diagnostic(enum EXIT_CODES exit_code, 
-    const char* file, const char* func, int line);
-
-/**
  * Crash s'il y'a une erreur et 
  * print l'endroit ou l'erreur est arriver
  */
@@ -34,10 +29,9 @@ void error_diagnostic_abort(enum EXIT_CODES exit_code,
     const char* file, const char* func, int line);
 
 /**
- * Renvoie un booleen false s'il y'a un warning et 
- * print l'endroit ou le warning est arriver.
+ * Montre un message de warning si le code de sortie est négative
  */
-bool error_warning_diagnostic(enum EXIT_CODES exit_code, 
+void error_warning_diagnostic(enum EXIT_CODES exit_code, 
     const char* file, const char* func, int line);
 
 /**
@@ -48,14 +42,10 @@ void error_assert_with_message(bool expression, const char* message,
 
 #ifdef DEBUG
     #define DEBUG_WARNING(ERR_CODE) error_warning_diagnostic(ERR_CODE, __FILE__, __func__, __LINE__)
-    #define DEBUG_SHOW_ERR_LOCATION error_show_error_location(__FILE__, __func__, __LINE__)
-    #define DEBUG_SHOW_IF_ERREUR(ERR_CODE) error_diagnostic(ERR_CODE, __FILE__, __func__, __LINE__)
     #define DEBUG_ABORT_IF_ERREUR(ERR_CODE) error_diagnostic_abort(ERR_CODE, __FILE__, __func__, __LINE__)
     #define DEBUG_ASSERT_W_MESSAGE(EXPR, MESSAGE) error_assert_with_message(EXPR, MESSAGE, __FILE__, __func__, __LINE__)
 #else
     #define DEBUG_WARNING(ERR_CODE) ((void)0)
-    #define DEBUG_SHOW_ERR_LOCATION ((void)0)
-    #define DEBUG_SHOW_IF_ERREUR(ERR_CODE) true 
     #define DEBUG_ABORT_IF_ERREUR(ERR_CODE) ((void)0)
     #define DEBUG_ASSERT_W_MESSAGE(EXPR, MESSAGE) ((void)0)
 #endif

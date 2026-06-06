@@ -82,22 +82,6 @@ static void error_show_warning_location(const char* file, const char* func, int 
     fprintf(stderr, "\033[35m[WARNING]\033[0m [%s]::[%s]::[line %d] : ", file, func, line);
 }
 
-/**
- * Renvoie un booleen false s'il y'a une erreur et 
- * print l'endroit ou l'erreur est arriver.
- */
-bool error_diagnostic(enum EXIT_CODES exit_code, 
-    const char* file, const char* func, int line)
-{
-    if(exit_code != SUCESS)
-    {
-        error_show_error_location(file, func, line);
-        error_printer(exit_code);
-        return false;
-    }
-    return true;
-}
-
 
 /**
  * Crash s'il y'a une erreur et print l'endroit ou l'erreur est arriver
@@ -105,7 +89,7 @@ bool error_diagnostic(enum EXIT_CODES exit_code,
 void error_diagnostic_abort(enum EXIT_CODES exit_code, 
     const char* file, const char* func, int line)
 {
-    if(exit_code != SUCESS)
+    if(exit_code < SUCESS)
     {
         error_show_error_location(file, func, line);
         error_printer(exit_code);
@@ -114,21 +98,16 @@ void error_diagnostic_abort(enum EXIT_CODES exit_code,
 }
 
 /**
- * Renvoie un booleen false s'il y'a un warning et 
- * print l'endroit ou le warning est arriver.
+ * Montre un message de warning si le code de sortie est négative
  */
-bool error_warning_diagnostic(enum EXIT_CODES exit_code, 
+void error_warning_diagnostic(enum EXIT_CODES exit_code, 
     const char* file, const char* func, int line)
 {
-    if(exit_code == SUCESS)
+    if(exit_code < SUCESS)
     {
-        return true;
+        error_show_warning_location(file, func, line);
+        error_printer(exit_code);
     }
-
-    error_show_warning_location(file, func, line);
-    error_printer(exit_code);
-
-    return false;
 }
 
 /**

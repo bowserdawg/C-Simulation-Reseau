@@ -13,7 +13,7 @@ DEP_DIR   := $(BUILD_DIR)/deps
  
 # Compiler & flags
 CC        := gcc
-CFLAGS    := -Wall -Wextra -Wpedantic -std=c23 -I$(INC_DIR)
+CFLAGS    := -Wall -Wextra -Wpedantic -std=c23 -I$(INC_DIR) -DDEBUG
 LDFLAGS   :=                          # Add linker flags here (e.g. -lm)
  
 # ------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ TEST_DEP_DIR    := $(BUILD_DIR)/deps/tests
 TEST_TARGET     := $(TEST_BUILD_DIR)/test_runner
  
 # Flags for test compilation (debug info, no optimisation, coverage-friendly)
-TEST_CFLAGS     := -Wall -Wextra -Wpedantic -std=c11 -I$(INC_DIR) -g -O0 -DDEBUG
+TEST_CFLAGS     := -Wall -Wextra -Wpedantic -std=c23 -I$(INC_DIR) -g -O0 -DDEBUG
 TEST_LDFLAGS    :=                          # Add test-specific linker flags here
  
 # ==============================================================================

@@ -85,7 +85,8 @@ struct mac mac_from_string(char *mac_string) {
   // on parcours les char de la ligne pour récuperer le mac
   // on utilise SIZE_MAC_STRING parce que le mac est toujours de la même taille
   // (6 octet)
-  for (size_t i = 0; i < SIZE_MAC_STRING; i += 3) {
+  for (size_t i = 0; i < SIZE_MAC_STRING; i += 3) 
+  {
 
     // on initialise un tableau de 3 char pour les 2 char de l'octet en hexa et
     // le char de fin '\0'
