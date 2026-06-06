@@ -1,5 +1,6 @@
 #include "address_ip.h" // Contient address_ip_t et octet_ip_t et OCTET_IP
 #include "errors.h"     // Pour les messages d'erreur
+#include "address_mac.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -29,6 +29,10 @@ static void error_printer(enum EXIT_CODES error)
         perror("A file couldn't be open with a system function");
         break;
     
+    case ERROR_BAD_ALLOC:
+        perror("Memory allocation failed");
+        break;
+    
     case ERROR_INVALID_STRING_FORMAT:
         fprintf(stderr, "The given string format was invalid for the function\n");
         break;
@@ -115,6 +119,13 @@ void error_diagnostic_abort(enum EXIT_CODES exit_code,
 bool error_warning_diagnostic(enum EXIT_CODES exit_code, 
     const char* file, const char* func, int line)
 {
+    if(exit_code == SUCESS)
+    {
+        return true;
+    }
+
     error_show_warning_location(file, func, line);
     error_printer(exit_code);
+
+    return false;
 }
