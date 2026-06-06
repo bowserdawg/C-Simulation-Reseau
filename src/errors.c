@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 /**
  * Affiche un message d'erreur sur le terminal pour une erreur donné en paramètre.
@@ -128,4 +129,18 @@ bool error_warning_diagnostic(enum EXIT_CODES exit_code,
     error_printer(exit_code);
 
     return false;
+}
+
+/**
+ * Si l'expression boolean donné est fausse, affiche un message donné et fait un assert faux.
+ */
+void error_assert_with_message(bool expression, const char* message,
+    const char* file, const char* func, int line)
+{
+    if(!expression)
+    {
+        error_show_error_location(file, func, line);
+        fputs(message, stderr);
+        assert(false);
+    }
 }

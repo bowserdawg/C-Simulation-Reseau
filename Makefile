@@ -1,5 +1,3 @@
-# Crédits à Claude pour ce MakeFile
-
 # ==============================================================================
 # Project Configuration
 # ==============================================================================
@@ -15,8 +13,21 @@ DEP_DIR   := $(BUILD_DIR)/deps
  
 # Compiler & flags
 CC        := gcc
-CFLAGS    := -Wall -Wextra -Wpedantic  -DDEBUG -g -std=c23 -I$(INC_DIR)
-LDFLAGS   :=   # Add linker flags here (e.g. -lm)
+CFLAGS    := -Wall -Wextra -Wpedantic -std=c23 -I$(INC_DIR)
+LDFLAGS   :=                          # Add linker flags here (e.g. -lm)
+ 
+# ------------------------------------------------------------------------------
+# Test configuration
+# ------------------------------------------------------------------------------
+ 
+TEST_DIR        := tests
+TEST_BUILD_DIR  := $(BUILD_DIR)/tests
+TEST_DEP_DIR    := $(BUILD_DIR)/deps/tests
+TEST_TARGET     := $(TEST_BUILD_DIR)/test_runner
+ 
+# Flags for test compilation (debug info, no optimisation, coverage-friendly)
+TEST_CFLAGS     := -Wall -Wextra -Wpedantic -std=c11 -I$(INC_DIR) -g -O0 -DDEBUG
+TEST_LDFLAGS    :=                          # Add test-specific linker flags here
  
 # ==============================================================================
 # Derived variables  (no need to touch these)
@@ -35,11 +46,27 @@ DEPS      := $(patsubst $(SRC_DIR)/%.c, $(DEP_DIR)/%.d, $(SRCS))
 TARGET_BUILD := $(BUILD_DIR)/$(TARGET)
 TARGET_ROOT  := ./$(TARGET)
  
+# ------------------------------------------------------------------------------
+# Test derived variables
+# ------------------------------------------------------------------------------
+ 
+# All .c sources found recursively under tests/
+TEST_SRCS     := $(shell find $(TEST_DIR) -name '*.c')
+ 
+# Their .o files under build/tests/
+TEST_OBJS     := $(patsubst $(TEST_DIR)/%.c, $(TEST_BUILD_DIR)/%.o, $(TEST_SRCS))
+ 
+# Their .d dependency files under build/deps/tests/
+TEST_DEPS     := $(patsubst $(TEST_DIR)/%.c, $(TEST_DEP_DIR)/%.d, $(TEST_SRCS))
+ 
+# src/ objects minus main.o — tests supply their own entry point
+SRC_OBJS_NO_MAIN := $(filter-out $(BUILD_DIR)/main.o, $(OBJS))
+ 
 # ==============================================================================
 # Targets
 # ==============================================================================
  
-.PHONY: all clean purge help
+.PHONY: all test clean purge help
  
 # Default target ---------------------------------------------------------------
 all: $(TARGET_BUILD)
@@ -66,8 +93,47 @@ $(BUILD_DIR):
 $(DEP_DIR):
 	mkdir -p $(DEP_DIR)
  
+$(TEST_BUILD_DIR):
+	mkdir -p $(TEST_BUILD_DIR)
+ 
+$(TEST_DEP_DIR):
+	mkdir -p $(TEST_DEP_DIR)
+ 
 # Include auto-generated dependency rules (silently skip if missing) ----------
 -include $(DEPS)
+-include $(TEST_DEPS)
+ 
+# ==============================================================================
+# Test target
+# ==============================================================================
+ 
+# Build and immediately run the test binary.
+# Depends on the src/ objects (excluding main.o) so they are rebuilt first if
+# any source file changed — tests always exercise the latest compiled code.
+test: $(TEST_TARGET)
+	@echo ""
+	@echo "  Running tests..."
+	@echo ""
+	@$(TEST_TARGET); \
+	  STATUS=$$?; \
+	  echo ""; \
+	  if [ $$STATUS -eq 0 ]; then \
+	    echo "  All tests passed."; \
+	  else \
+	    echo "  Tests FAILED (exit code $$STATUS)."; \
+	  fi; \
+	  exit $$STATUS
+ 
+# Link test objects + src objects (no main.o) into the test runner ------------
+$(TEST_TARGET): $(TEST_OBJS) $(SRC_OBJS_NO_MAIN) | $(TEST_BUILD_DIR)
+	$(CC) $^ -o $@ $(TEST_LDFLAGS)
+	@echo ""
+	@echo "  Built  ->  $(TEST_TARGET)"
+ 
+# Compile each tests/*.c -> build/tests/*.o ------------------------------------
+$(TEST_BUILD_DIR)/%.o: $(TEST_DIR)/%.c | $(TEST_BUILD_DIR) $(TEST_DEP_DIR)
+	@mkdir -p $(dir $@) $(dir $(TEST_DEP_DIR)/$*.d)
+	$(CC) $(TEST_CFLAGS) -MMD -MP -MF $(TEST_DEP_DIR)/$*.d -c $< -o $@
  
 # ==============================================================================
 # Maintenance targets
@@ -93,6 +159,7 @@ help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "  all     Build the project (default)"
+	@echo "  test    Compile and run all tests in tests/"
 	@echo "  clean   Remove the executable from the root directory"
 	@echo "  purge   Remove the root executable AND the entire build/ directory"
 	@echo "  help    Show this message"

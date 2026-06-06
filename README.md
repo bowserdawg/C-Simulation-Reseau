@@ -7,6 +7,7 @@
     dans le dossier 'root' du projet car c'est pratique.
 - make clean : Efface seulement l'executable 'main' du dossier root du projet.
 - make purge : Efface tout le dossier /build.
+- make test : Execute tous les tests dasn /tests.
 
 # cahier des charges
 
