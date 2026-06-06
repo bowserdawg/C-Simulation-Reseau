@@ -30,3 +30,12 @@ struct optional_device_switch init_switch(struct mac mac, port_t nbPort)
                     .exit_code = ex_code
                 };
 }
+
+/*
+* Attention : ne met pas l'adresse mac à 0.
+*/
+void deinit_switch(struct device_switch* swtch)
+{
+    deinit_table_commutation(&swtch->table_commutation);
+    swtch->table_commutation.data = NULL;
+}

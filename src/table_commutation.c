@@ -85,8 +85,9 @@ void deinit_table_commutation(struct table_commutation* table)
 
     // Juste pour s'assurer au debuggage si on ne fait pas de free inutile.
     if(!table->data)
-        DEBUG_WARNING(ERROR_BAD_ALLOC);
+        DEBUG_WARNING(WARNING_ITEM_NULL_FREEING);
 
     free(table->data);
+    table->data = NULL;
     table->size = 0;
 }

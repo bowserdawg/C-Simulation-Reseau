@@ -27,3 +27,8 @@ struct optional_port {
  * Initialise un nouveau switch. 
  */
 struct optional_device_switch init_switch(struct mac mac, port_t nbPort);
+
+/*
+* Attention : ne met pas l'adresse mac à 0.
+*/
+void deinit_switch(struct device_switch* swtch);

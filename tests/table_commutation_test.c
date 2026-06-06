@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-void table_commutation_test()
+void test_table_commutation()
 {
     struct optional_table_commutation op_tc = init_table_commutation(100);
     DEBUG_WARNING(op_tc.exit_code);

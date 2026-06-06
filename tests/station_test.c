@@ -3,6 +3,7 @@
 #include "address_mac.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 
@@ -17,8 +18,9 @@ void test_station()
     ip_to_string(&ip_str, ip);
     char* mac_str = NULL;
     mac_to_string(&mac_str, mac);
-    
-    fprintf(stderr, "mac : %s , ip : %s ", mac_str, ip_str);
+
+    DEBUG_ASSERT_W_MESSAGE(strcmp(ip_str, "192.20.12.92") == 0, "FAIL ip string comparison failed\n");
+    DEBUG_ASSERT_W_MESSAGE(strcmp(mac_str, "F1:A2:18:89:5B:09") == 0, "FAIL mac string comparison failed\n");
 
     free(ip_str);
     free(mac_str);
