@@ -1,5 +1,7 @@
-#include "table_comutation.h"
-#include "stdio.h"
+#include "table_commutation.h"
+#include "switch.h"
+
+#include <stdio.h>
 
 void table_commutation_test()
 {

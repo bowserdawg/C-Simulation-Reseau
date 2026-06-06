@@ -4,6 +4,7 @@
 void test_ip();
 void test_mac();
 void table_commutation_test();
+void test_station();
 
 static void terminal_message(const char* message)
 {
@@ -18,6 +19,9 @@ int main()
     test_mac();
     terminal_message("Starting table_commutation_test...");
     table_commutation_test();
+    terminal_message("Starting test_station...");
+    test_station();
+
 
     return 0;
 }
