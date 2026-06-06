@@ -49,6 +49,15 @@ static void error_printer(enum EXIT_CODES error)
     case ERROR_INVALID_TERMINAL_ARGS:
         fprintf(stderr, "The arguments given by the user in the terminal aren't valid\n");
         break;
+    
+    case ERROR_NULL_POINTER_PARAM:
+        fprintf(stderr, "The pointer argument are null\n");
+        break;
+
+    case WARNING_ITEM_NULL_FREEING:
+        fprintf(stderr, "This item is null and freeing it isn't needed\n");
+        break;
+
 
     default:
         fprintf(stderr, "Unspecified error code : %d\n", error);

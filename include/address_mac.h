@@ -37,3 +37,13 @@ enum EXIT_CODES mac_to_string(char** string, struct mac mac);
  * en struct optional_mac.
  */
 struct optional_mac mac_from_str(const char* mac_str);
+
+/**
+ * Retourne une adresse mac en entier de 64 bit.
+ */
+uint64_t mac_to_long(struct mac mac);
+
+/*
+* Compare deux addresse mac et retourne true si les deux sont identiques.
+*/
+bool mac_equals(struct mac first, struct mac second);

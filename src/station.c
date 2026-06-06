@@ -5,7 +5,7 @@
 /**
  * Pas besoin de cette fonction en vrai mais on va l'ajouter pour rester cohérente. 
  */
-struct station init_station(struct ip ip, struct mac mac)
+struct device_station init_station(struct ip ip, struct mac mac)
 {
-    return (struct station){ip, mac};
+    return (struct device_station){ip, mac};
 }

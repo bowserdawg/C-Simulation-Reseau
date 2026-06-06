@@ -42,6 +42,7 @@ void test_mac()
         DEBUG_ASSERT_W_MESSAGE(op1.mac.mac_array[i] == op2.mac.mac_array[i], "FAIL Both mac addresses given by mac_from_str should have been similar.\n");
     }
 
+    // Test erreur de formattage
     struct optional_mac op_mac_fin = mac_from_str("C00:A8:BB:7B:10:59");
     DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCESS, "FAIL mac_from_str should have given an error\n");
     op_mac_fin = mac_from_str("C0A8:BB:7B:10:59");
@@ -54,6 +55,7 @@ void test_mac()
     DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCESS, "FAIL mac_from_str should have given an error\n");
 
     op_mac_fin = mac_from_str(NULL);
+    // Tester si les arguments null peuvent etre géré 
     DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code == ERROR_NULL_STRING_PARAM, "FAIL a null string parameter should give an error\n");
 
     free(string1);

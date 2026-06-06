@@ -139,3 +139,33 @@ struct optional_mac mac_from_str(const char* mac_str)
     DEBUG_WARNING(ERROR_INVALID_STRING_FORMAT);
     return (struct optional_mac){new_mac, ERROR_INVALID_STRING_FORMAT};
 }
+
+/**
+ * Retourne une adresse mac en entier de 64 bit.
+ */
+uint64_t mac_to_long(struct mac mac)
+{ 
+    uint64_t u64 = 0;
+    int shift = 40;
+    for(size_t i = 0; i < MAC_NB_OCTET; ++i)
+    {
+        u64 = (u64 + mac.mac_array[i]) << shift;
+        shift -= 8;
+    }   
+    return u64;
+}
+
+/*
+* Compare deux addresse mac et retourne true si les deux sont identiques.
+*/
+bool mac_equals(struct mac first, struct mac second)
+{
+    return (
+        first.mac_array[0] == second.mac_array[0] &&
+        first.mac_array[1] == second.mac_array[1] &&
+        first.mac_array[2] == second.mac_array[2] &&
+        first.mac_array[3] == second.mac_array[3] &&
+        first.mac_array[4] == second.mac_array[4] &&
+        first.mac_array[5] == second.mac_array[5] 
+    );
+}
