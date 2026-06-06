@@ -6,7 +6,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(int argc, char *argv[]) {
+#define NET_APP_NAME "main"
 
-  return 0;
+int main(int argc, char *argv[]) 
+{
+    enum EXIT_CODES exit_code = SUCESS;
+
+    if(argc < 2)
+    {
+        printf("Usage : %s [fichier_config]\n", NET_APP_NAME);
+        DEBUG_WARNING(ERROR_INVALID_TERMINAL_ARGS);
+        exit_code = ERROR_INVALID_TERMINAL_ARGS;
+    }
+    else
+    {
+        exit_code = init_net_from_file(argv[1]);
+        if(exit_code != SUCESS)
+        {
+            perror(NET_APP_NAME);
+        }
+    }
+
+    return (exit_code == SUCESS) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

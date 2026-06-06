@@ -46,6 +46,10 @@ static void error_printer(enum EXIT_CODES error)
         fprintf(stderr, "A string given in fonction argument was invalid\n");
         break;
 
+    case ERROR_INVALID_TERMINAL_ARGS:
+        fprintf(stderr, "The arguments given by the user in the terminal aren't valid\n");
+        break;
+
     default:
         fprintf(stderr, "Unspecified error code : %d\n", error);
         break;

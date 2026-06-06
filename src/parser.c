@@ -34,7 +34,7 @@ void display_ip(struct ip *ip) {
   puts(ip_str);
 }
 
-void init_net_from_file(const char *filename) {
+enum EXIT_CODES init_net_from_file(const char *filename) {
 
   char filepath[MAX_FILENAME_LENGTH];
   snprintf(filepath, MAX_FILENAME_LENGTH, "%s%s", CONFIG_FILES_PATH, filename);
@@ -42,8 +42,8 @@ void init_net_from_file(const char *filename) {
   FILE *file = fopen(filepath, "r");
 
   if (file == NULL) {
-    perror("Erreur de fopen dans init_net_from_file");
-    exit(EXIT_FAILURE);
+    DEBUG_WARNING(ERR_NULL_FILE);
+    return ERR_NULL_FILE;
   }
 
   char line[MAX_LINE_LENGTH];
@@ -85,9 +85,11 @@ void init_net_from_file(const char *filename) {
   end_while:
     line_counter++;
   }
-  printf("station %ld, liaison %ld\n test :", nb_devices, nb_links);
+  printf("station %ld, liaison %ld\n test : \n", nb_devices, nb_links);
 
   fclose(file);
+
+  return SUCESS;
 }
 
 void test() { printf("test"); }

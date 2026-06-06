@@ -3,5 +3,5 @@
 #include "address_ip.h"
 
 
-void init_net_from_file(const char *filename);
+enum EXIT_CODES init_net_from_file(const char *filename);
 void display_ip(struct ip *);
