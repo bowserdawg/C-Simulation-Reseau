@@ -5,6 +5,7 @@
 
 #define TEST_SIZE_GRAPH 20
 #define NB_PORT_TEST 8
+#define PRIORITY_TEST 1903
 
 void test_net_graph()
 {
@@ -17,7 +18,9 @@ void test_net_graph()
 
 
     struct optional_device_switch op_sw1 = init_switch(
-        init_mac(0xAF, 0x76, 0xFA, 0xEA, 0x09, 0x12), NB_PORT_TEST
+        init_mac(0xAF, 0x76, 0xFA, 0xEA, 0x09, 0x12),
+        NB_PORT_TEST,
+        PRIORITY_TEST
     );
     DEBUG_ASSERT_W_MESSAGE(op_sw1.exit_code == SUCESS, "FAIL init_switch failed.\n");
     struct device_switch sw1 = op_sw1.dev_switch;

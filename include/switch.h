@@ -2,15 +2,16 @@
 
 #include "address_ip.h"
 #include "address_mac.h"
+#include "table_commutation.h" // port_t et priority_t 
 
 #include <stdlib.h>
 
-#include "table_commutation.h"
 
 struct device_switch {
     struct table_commutation table_commutation;
     struct mac _mac;
     port_t _nbPort;
+    priority_t priority;
 };  
 
 struct optional_device_switch {
@@ -26,7 +27,7 @@ struct optional_port {
 /**
  * Initialise un nouveau switch. 
  */
-struct optional_device_switch init_switch(struct mac mac, port_t nbPort);
+struct optional_device_switch init_switch(struct mac mac, port_t nb_port, priority_t priority);
 
 
 /**

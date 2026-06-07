@@ -7,8 +7,10 @@ void test_switch()
     struct mac mac = init_mac(0xF1, 0xA2, 0x18, 0x89, 0x5B, 0x09);
 
     const port_t nb_port = 8;
+    const priority_t priority = 1200;
 
-    struct optional_device_switch swtch = init_switch(mac, nb_port);
+
+    struct optional_device_switch swtch = init_switch(mac, nb_port, priority);
 
     // Test pour voire si le switch est bien initalisé.
     DEBUG_ASSERT_W_MESSAGE(swtch.exit_code == SUCESS, "FAIL Switch initalisation failed\n");

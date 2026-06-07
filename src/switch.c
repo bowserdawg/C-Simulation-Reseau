@@ -7,7 +7,7 @@
 /**
  * Initialise un nouveau switch. 
  */
-struct optional_device_switch init_switch(struct mac mac, port_t nbPort)
+struct optional_device_switch init_switch(struct mac mac, port_t nb_port, priority_t priority)
 {
     enum EXIT_CODES ex_code = SUCESS;
 
@@ -23,8 +23,9 @@ struct optional_device_switch init_switch(struct mac mac, port_t nbPort)
                     .dev_switch = (struct device_switch)
                     {
                         .table_commutation = table.table,
-                        ._mac = mac, 
-                        ._nbPort = nbPort
+                        ._mac     = mac, 
+                        ._nbPort  = nb_port,
+                        .priority = priority
                     }, 
 
                     .exit_code = ex_code
@@ -81,10 +82,11 @@ struct optional_port switch_look_table(struct device_switch* swtch, struct mac m
 }
 
 /*
-* Attention : ne met pas l'adresse mac à 0.
+* Attention : ne met pas l'adresse mac à 0, mais la priorité oui.
 */
 void deinit_switch(struct device_switch* swtch)
 {
     deinit_table_commutation(&swtch->table_commutation);
     swtch->table_commutation.data = NULL;
+    swtch->priority = 0;
 }
