@@ -58,6 +58,10 @@ static void error_printer(enum EXIT_CODES error)
         fprintf(stderr, "The given port number is invalid\n");
         break;
 
+    case ERROR_CAPACITY_REACHED:
+        fprintf(stderr, "The capacity of the container is reached\n");
+        break;
+
     case WARNING_ITEM_NULL_FREEING:
         fprintf(stderr, "This item is null and freeing it isn't needed\n");
         break;
