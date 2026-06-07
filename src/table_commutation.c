@@ -19,7 +19,7 @@ struct optional_table_commutation init_table_commutation(size_t initial_size)
     struct table_commutation new_table;
 
     new_table.data = malloc(sizeof(struct table_entry) * initial_size);
-    if(new_table.data == NULL)
+    if(!new_table.data)
     {
         DEBUG_WARNING(ERROR_BAD_ALLOC);
         return (struct optional_table_commutation){.table = new_table, .exit_code = ERROR_BAD_ALLOC};
@@ -35,7 +35,7 @@ struct optional_table_commutation init_table_commutation(size_t initial_size)
  */
 enum EXIT_CODES table_commutation_add(struct table_commutation table, port_t port, struct mac address)
 {
-    if(!(table.data))
+    if(!table.data)
     {
         DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
         return ERROR_NULL_POINTER_PARAM;
@@ -54,7 +54,7 @@ enum EXIT_CODES table_commutation_add(struct table_commutation table, port_t por
  */
 struct optional_port table_commutation_lookup(struct table_commutation table, struct mac mac)
 {
-    if(!(table.data))
+    if(!table.data)
     {
         DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
         return (struct optional_port){INVALID_PORT, ERROR_NULL_POINTER_PARAM};

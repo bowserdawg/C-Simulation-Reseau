@@ -62,10 +62,26 @@ static void error_printer(enum EXIT_CODES error)
         fprintf(stderr, "The capacity of the container is reached\n");
         break;
 
+    case ERROR_PARSER_NO_FILE:
+        perror("Parser");
+        break;
+
+    case ERROR_PARSER_HEADER:
+        fprintf(stderr, "The given config file has an incorrect header\n");
+        break;
+
+    case ERROR_PARSING_FORMAT_DEVICES:
+        fprintf(stderr, "The given config file has an incorrent format in the 'devices' zone. \n");
+        break;
+
+    case ERROR_PARSER_UNKNOWN_CONFIG:
+        fprintf(stderr, "The given config file has an unknwon value. \n");
+        break;
+
     case WARNING_ITEM_NULL_FREEING:
         fprintf(stderr, "This item is null and freeing it isn't needed\n");
         break;
-
+    
 
     default:
         fprintf(stderr, "Unspecified error code : %d\n", error);

@@ -5,11 +5,10 @@
 #include "table_commutation.h"
 #include "switch.h"
 #include "net_graph.h"
+#include "global.h"
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#define NET_APP_NAME "main"
 
 int main(int argc, char *argv[]) 
 {
@@ -17,7 +16,7 @@ int main(int argc, char *argv[])
 
     if(argc < 2)
     {
-        printf("Usage : %s [fichier_config]\n", NET_APP_NAME);
+        printf("Usage : %s [fichier_config]\n", G_APP_NAME);
         DEBUG_WARNING(ERROR_INVALID_TERMINAL_ARGS);
         exit_code = ERROR_INVALID_TERMINAL_ARGS;
     }
@@ -26,7 +25,7 @@ int main(int argc, char *argv[])
         exit_code = init_net_from_file(argv[1]);
         if(exit_code != SUCESS)
         {
-            perror(NET_APP_NAME);
+            perror(G_APP_NAME);
         }
     }
 
