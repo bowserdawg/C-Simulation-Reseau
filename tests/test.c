@@ -6,6 +6,7 @@ void test_mac();
 void test_table_commutation();
 void test_station();
 void test_switch();
+void test_net_graph();
 
 static void terminal_message(const char* message)
 {
@@ -24,6 +25,8 @@ int main()
     test_station();
     terminal_message("Starting test_switch...");
     test_switch();
+    terminal_message("Starting test_net_graph...");
+    test_net_graph();
 
 
     return 0;
