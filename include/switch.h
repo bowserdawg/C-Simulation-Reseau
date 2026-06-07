@@ -28,6 +28,34 @@ struct optional_port {
  */
 struct optional_device_switch init_switch(struct mac mac, port_t nbPort);
 
+
+/**
+ * Ajoute une nouvelle entré à la table de commutation.
+ * 
+ *      swtch : Le switch ou l'entré est ajouté.     
+ * 
+ *      port : Le port qui mene à la machine.
+ * 
+ *      mac  : L'adresse mac de la machine.
+ * 
+ * Retourne : Un code d'erreur indiquant le status de sortie.
+ */
+enum EXIT_CODES switch_add_table(struct device_switch* swtch, port_t port, struct mac mac);
+
+
+/**
+ * Trouve une machine dans la tabke de commuttation si elle y est.
+ * 
+ *      swtch : Le switch ou l'entré est ajouté.     
+ * 
+ *      mac  : L'adresse mac de la machine.
+ * 
+ * Retourne : Le port qui méne jusqu'à la machine, dans un optional, 
+ *            "INVALID_PORT" dans l'optional si le port est introuvable, et
+ *            un code d'erreur indiquant si quelque chose de mal c'est passé.
+ */
+struct optional_port switch_look_table(struct device_switch* swtch, struct mac mac);
+
 /*
 * Attention : ne met pas l'adresse mac à 0.
 */

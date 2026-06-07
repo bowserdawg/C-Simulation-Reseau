@@ -54,6 +54,10 @@ static void error_printer(enum EXIT_CODES error)
         fprintf(stderr, "The pointer argument are null\n");
         break;
 
+    case ERROR_INVALID_PORT_PARAM:
+        fprintf(stderr, "The given port number is invalid\n");
+        break;
+
     case WARNING_ITEM_NULL_FREEING:
         fprintf(stderr, "This item is null and freeing it isn't needed\n");
         break;
