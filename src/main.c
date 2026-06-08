@@ -10,9 +10,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define CONFIG_FILES_PATH "./data/configs/"
+#define MAX_FILENAME_LENGTH 256
+
+
 int main(int argc, char *argv[]) 
 {
     enum EXIT_CODES exit_code = SUCESS;
+    struct net_graph graph = {NULL, 0, 0};
 
     if(argc < 2)
     {
@@ -22,12 +27,23 @@ int main(int argc, char *argv[])
     }
     else
     {
-        exit_code = init_net_from_file(argv[1]);
-        if(exit_code != SUCESS)
+        char filepath[MAX_FILENAME_LENGTH];
+        snprintf(filepath, MAX_FILENAME_LENGTH, "%s%s", CONFIG_FILES_PATH, argv[1]);
+
+        exit_code = parse_config(filepath, &graph);
+        if(exit_code == SUCESS)
         {
-            perror(G_APP_NAME);
+            // start la simulation ici
+        }
+        else
+        {
+            fprintf(stderr, "%s: Parsing failed, exiting program\n", G_APP_NAME);
         }
     }
+    
+    // On peut free meme s'il est NULL car c'est possible.
+    deinit_graph(&graph);
+    
 
     return (exit_code == SUCESS) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -1,4 +1,5 @@
 #include "errors.h"
+#include "global.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -63,7 +64,7 @@ static void error_printer(enum EXIT_CODES error)
         break;
 
     case ERROR_PARSER_NO_FILE:
-        perror("Parser");
+        perror(G_APP_NAME);
         break;
 
     case ERROR_PARSER_HEADER:

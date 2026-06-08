@@ -5,9 +5,6 @@
 #include "address_ip.h"
 #include "net_graph.h"
 
-enum EXIT_CODES init_net_from_file(const char *filename);
-void display_ip(struct ip *);
-
 /**
 * Permet de créer un graphe réseau avec un struct net_graph* et un fichier de config.
 * Le graphe est rempli avec les informations données dans le fichier.
