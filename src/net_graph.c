@@ -69,7 +69,7 @@ static enum EXIT_CODES check_null(struct net_graph* graph)
 
 static enum EXIT_CODES check_size(struct net_graph* graph)
 {
-    if(graph->nb_devices+1 >= graph->cap_devices)
+    if(graph->nb_devices+1 > graph->cap_devices)
     {
         DEBUG_WARNING(ERROR_CAPACITY_REACHED);
         return ERROR_CAPACITY_REACHED;
@@ -277,12 +277,13 @@ struct optional_bool net_graph_devices_are_connected(const struct net_graph* gra
     // On laisse le programme crash si le graph est null car c'est une erreur grave.
     if(!graph)
     {
+        DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
         return (struct optional_bool){false, ERROR_NULL_POINTER_PARAM};
     }
-
     if(graph->nb_devices <= index1 || graph->nb_devices <= index2)
     {
         // L'index est "out of range".
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
         return (struct optional_bool){false, ERROR_INDEX_OUT_OF_RANGE};
     }
 
