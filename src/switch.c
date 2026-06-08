@@ -25,6 +25,7 @@ struct optional_device_switch init_switch(struct mac mac, port_t nb_port, priori
                         .table_commutation = table.table,
                         ._mac     = mac, 
                         ._nbPort  = nb_port,
+                        .nb_port_utilise = 0,
                         .priority = priority
                     }, 
 
@@ -90,3 +91,7 @@ void deinit_switch(struct device_switch* swtch)
     swtch->table_commutation.data = NULL;
     swtch->priority = 0;
 }
+
+/*
+* Augmente le nombre de port utilisé par un switch.
+*/

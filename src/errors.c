@@ -78,6 +78,14 @@ static void error_printer(enum EXIT_CODES error)
         fprintf(stderr, "The given config file has an unknwon value. \n");
         break;
 
+    case ERROR_INDEX_OUT_OF_RANGE:
+        fprintf(stderr, "The given index is out of range for the container. \n");
+        break;
+
+    case ERROR_NODE_SEMANTIC_ERROR_SAME_INDEX:
+        fprintf(stderr, "A node can't point to itself in this context. \n");
+        break;
+
     case WARNING_ITEM_NULL_FREEING:
         fprintf(stderr, "This item is null and freeing it isn't needed\n");
         break;

@@ -35,6 +35,11 @@ struct optional_size {
     enum EXIT_CODES exit_code;
 };
 
+struct optional_bool {
+    bool boolean;
+    enum EXIT_CODES exit_code;
+};
+
 /**
  * Crée une nouvelle graphe de réseau.
  * 
@@ -68,6 +73,26 @@ struct optional_size net_graph_add_station(struct net_graph* graph, struct devic
  * Retourne : un optional de l'indice ou l'élement à été rajouté.
  */
 struct optional_size net_graph_add_switch(struct net_graph* graph, struct device_switch swtch);
+
+/**
+ * Ajoute une arête (lien) au graphe du réseau.
+ * 
+ *      - graph  : Le graphe ou il faut ajouter le lien.
+ * 
+ *      - index1 : L'index d'un des sommets.
+ *      
+ *      - index2 : L'index d'un autre sommet distinct à index1.
+ * 
+ *      - cost   : Le cout (le poid) d'un lien.*
+ * 
+ * Retourne : Un code d'erreur.
+ */
+enum EXIT_CODES net_graph_add_node(const struct net_graph* graph, size_t index1, size_t index2, cost_t cost);
+
+/**
+ * Cherche si deux machines sont connectés.
+ */
+struct optional_bool net_graph_devices_are_connected(const struct net_graph* graph, size_t index1, size_t index2);
 
 /**
  * Detruit le graphe du réseau.

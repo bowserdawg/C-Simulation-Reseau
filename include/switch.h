@@ -11,6 +11,7 @@ struct device_switch {
     struct table_commutation table_commutation;
     struct mac _mac;
     port_t _nbPort;
+    port_t nb_port_utilise;
     priority_t priority;
 };  
 
