@@ -6,6 +6,7 @@
 #include "switch.h"
 #include "net_graph.h"
 #include "global.h"
+#include "trame.h"
 
 #include <stdio.h>
 #include <stdlib.h>

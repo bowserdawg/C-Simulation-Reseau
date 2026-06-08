@@ -8,6 +8,7 @@ void test_station();
 void test_switch();
 void test_net_graph();
 void test_parser();
+int test_trame();
 
 static void terminal_message(const char* message)
 {
@@ -30,6 +31,8 @@ int main()
     test_net_graph();
     terminal_message("Starting test_parser...");
     test_parser();
+    terminal_message("Starting test_trame...");
+    test_trame();
 
 
     return 0;
