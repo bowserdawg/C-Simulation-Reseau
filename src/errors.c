@@ -94,6 +94,10 @@ static void error_printer(enum EXIT_CODES error)
     case WARNING_ITEM_NULL_FREEING:
         fprintf(stderr, "This item is null and freeing it isn't needed\n");
         break;
+
+    case WARNING_ITEM_NOT_FOUND:
+        fprintf(stderr, "The item couldn't be found\n");
+        break;
     
 
     default:

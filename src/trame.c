@@ -419,6 +419,11 @@ enum EXIT_CODES trame_to_hex_ansi(struct trame tr, char** string)
  */
 void deinit_trame(struct trame* tr)
 {
+    if(!tr)
+    {
+        DEBUG_WARNING(WARNING_ITEM_NULL_FREEING);
+        return;
+    } 
     free(tr->trame);
     tr->trame = NULL;
     tr->size = 0;

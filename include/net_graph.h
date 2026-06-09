@@ -9,8 +9,6 @@
 // Le cout d'un lien.
 typedef uint32_t cost_t;
 
-#define INVALID_INDEX UINT64_MAX 
-
 // Pratique, permet de simuler du polymorphisme en C.
 union device {
     struct device_station d_station;

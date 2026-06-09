@@ -2,6 +2,7 @@
 #include "station.h"
 #include "switch.h"
 #include "errors.h"
+#include "global.h" // pour INVALID_INDEX
 
 #include <stdio.h>
 #include <stdlib.h>

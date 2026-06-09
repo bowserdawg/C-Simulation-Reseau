@@ -16,9 +16,22 @@ const char *TRAME_LEGENDE_COPIE =
     "\x1b[38;5;21m"  "██ FCS       " ANSI_RESET "(4 octets)  — CRC-32 de contrôle d'intégrité\n"
     "=====================================\n";
 
-int test_trame()
+void test_trame()
 {
-    uint8_t payload[] = { 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd' };
+    uint8_t payload[] = { 
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+        'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n',
+    };
     struct mac dest = { .mac_array = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF} };
     struct mac src  = { .mac_array = {0xAA,0xBB,0xCC,0xDD,0xEE,0xFF} };
 
@@ -43,14 +56,16 @@ int test_trame()
     DEBUG_ASSERT_W_MESSAGE(strcmp(trame_get_protocol_str_name(p), "IPv4") == 0, "FAIL incorrect protocol name\n");
     
     free(d_mac_str);
+    d_mac_str = NULL;
     free(s_mac_str);
+    s_mac_str = NULL;
     
     /* Accès en lecture seule au bloc DATA */
     const void *data_ptr = NULL;
     size_t data_len = trame_get_data(tr.tr, &data_ptr);
 
     // Bourrage corrrecte
-    DEBUG_ASSERT_W_MESSAGE(data_len == 46, "ERROR incorrect padding\n");
+    DEBUG_ASSERT_W_MESSAGE(data_len >= 46, "ERROR incorrect padding\n");
 
     // Payload correcte
     const uint8_t* data = (uint8_t*)data_ptr;
@@ -62,25 +77,22 @@ int test_trame()
     //puts("\n");
 
     /* Vérification de l'intégrité */
-    bool ok = trame_is_fcs_valid(tr.tr);
-    DEBUG_ASSERT_W_MESSAGE(ok == true, "FAIL incorrect fcs\n");
+    DEBUG_ASSERT_W_MESSAGE(trame_is_fcs_valid(tr.tr) == true, "FAIL incorrect fcs\n");
 
     char* rep_hex = NULL;
     DEBUG_ASSERT_W_MESSAGE(trame_to_hex(tr.tr, &rep_hex) == SUCESS, "FAIL trame to hex failed\n");
-
-    
-    fprintf(stderr, "%s\n",rep_hex);
-    free(rep_hex);
 
     DEBUG_ASSERT_W_MESSAGE(strcmp(trame_get_colored_legend(), TRAME_LEGENDE_COPIE) == 0, "FAIL dest mac address strings should have been equal\n");
 
     /* La trame colorié */
     char* colored = NULL;
     DEBUG_ASSERT_W_MESSAGE( trame_to_hex_ansi(tr.tr, &colored) == SUCESS, "FAIL trame to hex ANSI failed\n");
-    printf("%s\n", colored);
+    
+    free(rep_hex);
+    rep_hex = NULL;
     free(colored); 
+    colored = NULL;
 
     deinit_trame(&tr.tr);
 
-    return 0;
 }

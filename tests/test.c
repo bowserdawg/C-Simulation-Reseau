@@ -8,7 +8,8 @@ void test_station();
 void test_switch();
 void test_net_graph();
 void test_parser();
-int test_trame();
+void test_trame();
+void test_neighbourhood_creep();
 
 static void terminal_message(const char* message)
 {
@@ -33,6 +34,8 @@ int main()
     test_parser();
     terminal_message("Starting test_trame...");
     test_trame();
+    terminal_message("Starting test_neighbourhood_creep...");
+    test_neighbourhood_creep();
 
 
     return 0;

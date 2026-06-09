@@ -7,6 +7,7 @@
 #include "net_graph.h"
 #include "global.h"
 #include "trame.h"
+#include "neighbourhood_creep.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +15,7 @@
 #define CONFIG_FILES_PATH "./data/configs/"
 #define MAX_FILENAME_LENGTH 256
 
+const char* DATA = "Hello World";
 
 int main(int argc, char *argv[]) 
 {
