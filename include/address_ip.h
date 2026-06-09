@@ -59,11 +59,11 @@ struct ip init_ip(octet_ip_t o1, octet_ip_t o2, octet_ip_t o3, octet_ip_t o4);
  * Transforme une adresse ip en string.
  * 
  * Pas besoin d'allouer de l'espece de string. 
- * Il faut free le pointer string changé par la fonction.
+ * Il faut free le pointer string donné par la fonction.
  * 
- * Renvoie le nombre d'octet écrit.
+ * Renvoie une code de sortie.
  */
-int ip_to_string(char** string, struct ip ip);
+enum EXIT_CODES ip_to_string(char** string, struct ip ip);
 
 /**
  * Donne un octet specifique d'une adresse.

@@ -13,7 +13,7 @@ DEP_DIR   := $(BUILD_DIR)/deps
  
 # Compiler & flags
 CC        := gcc
-CFLAGS    := -Wall -Wextra -Wpedantic -g -std=c23 -I$(INC_DIR)
+CFLAGS    := -Wall -Wextra -Wpedantic -g -std=c23 -I$(INC_DIR) -DDEBUG -Wshadow
 LDFLAGS   :=                          # Add linker flags here (e.g. -lm)
  
 # ------------------------------------------------------------------------------

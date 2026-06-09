@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
         if(exit_code == SUCESS)
         {
             // start la simulation ici
-            user_loop();
+            user_loop(graph);
         }
         else
         {

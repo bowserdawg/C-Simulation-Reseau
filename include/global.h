@@ -7,3 +7,12 @@
 #define G_VERSION "0.1"
 
 #define INVALID_INDEX UINT64_MAX 
+
+/**
+ * Le type de machine.
+ */
+enum DEVICE_TYPE{
+    NONE,
+    STATION,
+    SWITCH,
+};

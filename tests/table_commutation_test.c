@@ -16,9 +16,9 @@ void test_table_commutation()
     struct mac mac3 = init_mac(75, 19, 172, 17, 182, 12);
 
     // Test add
-    table_commutation_add(table, 0, mac1);
-    table_commutation_add(table, 1, mac2);
-    table_commutation_add(table, 2, mac3);
+    table_commutation_add(&table, 0, mac1);
+    table_commutation_add(&table, 1, mac2);
+    table_commutation_add(&table, 2, mac3);
 
     // Test lookup pour lookup valide
     struct optional_port op1 = table_commutation_lookup(table, mac1);

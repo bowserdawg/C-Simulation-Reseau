@@ -1,5 +1,7 @@
 #include "global.h"
 #include "errors.h"
+#include "net_graph.h"
+#include "networking_logic.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -144,7 +146,7 @@ static void display_infos()
 }
 
 
-void parse_one()
+void parse_one(struct net_graph* graph)
 {
     if(strcmp(first, "help") == 0)
     {
@@ -159,16 +161,25 @@ void parse_one()
         fprintf(stderr, "Exiting program\n");
         close_program();
     }
+    else if(strcmp(first, "display") == 0)
+    {
+        enum EXIT_CODES ex = network_display(graph);
+        if(ex != SUCESS)
+        {
+            DEBUG_WARNING(ex);
+            fprintf(stderr, "Erreur dans l'affichage du réseau.\n");
+        }
+    }
     else
     {
         fprintf(stderr, "Error : invalid command '%s' \n", first);
     }
 }
 
-static void parse_command(int count)
+static void parse_command(int count, struct net_graph* graph)
 {
     if (count < 1) fprintf(stderr, "Error: expected at least one word\n");
-    else if (count == 1) parse_one();
+    else if (count == 1) parse_one(graph);
     else parse_two();
 }
 
@@ -181,8 +192,9 @@ static void parse_command(int count)
  * 
  *      - bp : Sets a new breakpoint frequency. Ex: bp 1000
  */
-enum EXIT_CODES user_loop()
+enum EXIT_CODES user_loop(struct net_graph graph)
 {
+    enum EXIT_CODES ex_code = SUCESS;
     display_infos();
 
     while(!program_should_close())
@@ -196,11 +208,13 @@ enum EXIT_CODES user_loop()
                 // Les ajoutes dans les buffers
                 int count = get_inputs();
 
-                parse_command(count);
+                parse_command(count, &graph);
             }
         }
+
+
         increase_tick();
     }
 
-    return 0;
+    return ex_code;
 }

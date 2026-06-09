@@ -2,17 +2,11 @@
 #include "station.h"
 #include "switch.h"
 #include "errors.h"
-#include "global.h" // pour INVALID_INDEX
+#include "global.h" // pour INVALID_INDEX et DEVICE_TYPE
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-enum device_type{
-    NONE,
-    STATION,
-    SWITCH,
-};
 
 
 // Le sommet d'un graphe de réseau est juste une machine.
@@ -21,7 +15,7 @@ struct net_node {
     struct connections* d_connections;
     size_t             nb_connected_nodes;
     size_t             cap_connected_nodes;
-    enum device_type   device_type;
+    enum DEVICE_TYPE   device_type;
 };
 
 struct connections {
@@ -225,6 +219,13 @@ static enum EXIT_CODES add_node(const struct net_graph* graph, size_t device_ind
     // Augmenter le nombre de sommet adjacent (degré).
     node->nb_connected_nodes++;
 
+    // Il faut faire des chose specials au switchs
+    if(node->device_type == SWITCH)
+    {
+        if(node->device.d_switch.nb_port_utilise >= node->device.d_switch._nbPort) return ERROR_SWITCH_SEMANTIC_ERROR;   
+        node->device.d_switch.nb_port_utilise++;   
+    }
+
     return SUCESS;
 }
 
@@ -301,6 +302,76 @@ struct optional_bool net_graph_devices_are_connected(const struct net_graph* gra
     }
 
     return (struct optional_bool){false, SUCESS};
+}
+
+/**
+ * Renvoie la machine demandé en tant que union.
+ */
+struct optional_device net_graph_get_machine(const struct net_graph* graph, size_t index)
+{
+    if(!graph || !graph->nodes)
+    {
+        DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
+        return (struct optional_device)
+        {
+            .device    = NULL,
+            .type      = NONE,
+            .exit_code = ERROR_NULL_POINTER_PARAM
+        };
+    }
+
+    if(graph->nb_devices <= index)
+    {
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        return (struct optional_device)
+        {
+            .device    = NULL,
+            .type      = NONE,
+            .exit_code = ERROR_INDEX_OUT_OF_RANGE
+        };
+    }
+
+    return (struct optional_device)
+    {
+        .device    = &graph->nodes[index].device,
+        .type      = graph->nodes[index].device_type,
+        .exit_code = SUCESS
+    };
+}
+
+/**
+ * Donne l'index de tous les machines adjacents.
+ * 
+ * Donne INVALID_INDEX si une erreur est arrivé. 
+ * 
+ * Le pointeur donne doit etre free aprés.
+ */
+size_t net_graph_surrounding_indexes(struct net_graph* graphe, size_t** indexes, size_t index)
+{
+    *indexes = malloc(sizeof(size_t) * graphe->nodes[index].nb_connected_nodes);
+    if(!*indexes)
+    {
+        DEBUG_WARNING(ERROR_BAD_ALLOC);
+        return INVALID_INDEX;
+    }
+
+    for(size_t i = 0; i < graphe->nodes[index].nb_connected_nodes; ++i)
+    {
+        // Based ptr arithmetic
+        ptrdiff_t idx = (graphe->nodes[index].d_connections[i].connected_node) - graphe->nodes;
+
+        if(idx < 0)
+        {
+            DEBUG_WARNING(ERROR_UNREACHABLE_STATE);
+            free(*indexes);
+            *indexes = NULL;
+            return INVALID_INDEX;
+        }
+
+        (*indexes)[i] = (size_t)idx;
+    }
+
+    return graphe->nodes[index].nb_connected_nodes;
 }
 
 /**

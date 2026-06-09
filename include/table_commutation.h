@@ -22,6 +22,7 @@ struct table_commutation
 {
     struct table_entry* data;
     size_t size;
+    size_t nb_elems;
 };
 
 struct optional_table_commutation
@@ -42,7 +43,7 @@ struct optional_table_commutation init_table_commutation(size_t inital_capacity)
 /**
  * Ajoute un élement à la table de commutation.
  */
-enum EXIT_CODES table_commutation_add(struct table_commutation table, port_t port, struct mac address);
+enum EXIT_CODES table_commutation_add(struct table_commutation* table, port_t port, struct mac address);
 
 /**
  * Retourne "INVALID_PORT" si l'addresse ne se trouve pas dans la table.

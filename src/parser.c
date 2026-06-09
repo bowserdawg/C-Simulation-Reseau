@@ -15,12 +15,6 @@
 #define MAC_BYTE_SIZE 6
 #define BUF_LEN 256
 
-enum DEVICE_TYPE {
-    NO_DEVICE,
-    DEV_STATION,
-    DEV_SWITCH
-};
-
 // Fonctions d'aides
 /***************************************************************************************/
 
@@ -173,7 +167,7 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
             goto end;
         }
 
-        if(type == DEV_STATION)
+        if(type == STATION)
         {
             // Les token en version string
             /* <type>;<mac>;<ip> */
@@ -214,7 +208,7 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
             /* Ajout de la station */
             net_graph_add_station(graph, station);
         }
-        else if (type == DEV_SWITCH)
+        else if (type == SWITCH)
         {
             // Les token en version string
             /* <type>;<mac>;<nb port>;<priorité>*/

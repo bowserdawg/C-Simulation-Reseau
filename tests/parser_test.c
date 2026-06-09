@@ -3,6 +3,7 @@
 #include "errors.h"
 
 #include <stddef.h>
+#include <stdio.h>
 
 void test_parser()
 {
@@ -21,6 +22,9 @@ void test_parser()
         0;3;0
         2;4;0
     */
+
+   // nbde connection pour switch
+    DEBUG_ASSERT_W_MESSAGE(net_graph_get_machine(&graph, 0).device->d_switch.nb_port_utilise == 3, "FAIL incorrect port numbers.\n");
 
     // Devrait marcher
     DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 0, 1).exit_code == SUCESS, "FAIL net_graph_devices_are_connected bad exit code.\n");

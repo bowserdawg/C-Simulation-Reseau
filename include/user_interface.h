@@ -1,3 +1,5 @@
 #pragma once
 
-int user_loop();
+#include "net_graph.h"
+
+int user_loop(struct net_graph graph);

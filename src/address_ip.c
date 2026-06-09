@@ -82,9 +82,9 @@ struct optional_octet ip_get_octet(struct ip ip, enum OCTET_IP octet)
  * Pas besoin d'allouer de l'espece de string. 
  * Il faut free le pointer string donné par la fonction.
  * 
- * Renvoie le nombre d'octet écrit. Si le nombre est négatif, il y'a un erreur qu'il faut checker.
+ * Renvoie une code de sortie.
  */
-int ip_to_string(char** string, struct ip ip)
+enum EXIT_CODES ip_to_string(char** string, struct ip ip)
 {
     int val = ip.ip;
 
@@ -104,7 +104,9 @@ int ip_to_string(char** string, struct ip ip)
 
     // Ecrit sur le buffer l'adress ip.
     // Vu qu'on à utilisé calloc, le terminateur null existe deja! C'est pratique.
-    return snprintf(*string, IP_STRING_MAX_SIZE, "%d.%d.%d.%d", o1, o2, o3, o4);
+    snprintf(*string, IP_STRING_MAX_SIZE, "%d.%d.%d.%d", o1, o2, o3, o4);
+
+    return SUCESS;
 }
 
 

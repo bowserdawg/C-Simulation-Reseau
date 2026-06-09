@@ -1,6 +1,7 @@
 #pragma once
 
 #include "errors.h"
+#include "global.h"
 
 #include <stdint.h>
 #include "station.h"
@@ -35,6 +36,12 @@ struct optional_size {
 
 struct optional_bool {
     bool boolean;
+    enum EXIT_CODES exit_code;
+};
+
+struct optional_device {
+    union device* device;
+    enum DEVICE_TYPE type;
     enum EXIT_CODES exit_code;
 };
 
@@ -91,6 +98,19 @@ enum EXIT_CODES net_graph_add_node(const struct net_graph* graph, size_t index1,
  * Cherche si deux machines sont connectés.
  */
 struct optional_bool net_graph_devices_are_connected(const struct net_graph* graph, size_t index1, size_t index2);
+
+/**
+ * Renvoie la machine demandé en tant que union.
+ */
+struct optional_device net_graph_get_machine(const struct net_graph* graph, size_t index);
+
+/**
+ * Rare fonction qui renvoit un pointeur nulle. 
+ * 
+ * Le pointeur donne doit etre free aprés
+ */
+size_t net_graph_surrounding_indexes(struct net_graph* graphe, size_t** indexes, size_t index);
+
 
 /**
  * Detruit le graphe du réseau.

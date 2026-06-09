@@ -95,6 +95,16 @@ static void error_printer(enum EXIT_CODES error)
         fprintf(stderr, "Couldn't read from the terminal. \n");
         break;
 
+    case ERROR_SWITCH_SEMANTIC_ERROR:
+        fprintf(stderr, "A switch has incorrect parameters. \n");
+        break;
+    
+    // La description fait peur...
+    case ERROR_UNREACHABLE_STATE:
+        fprintf(stderr, "An undefined event has occured. \n");
+        break;
+
+
     case WARNING_ITEM_NULL_FREEING:
         fprintf(stderr, "This item is null and freeing it isn't needed\n");
         break;

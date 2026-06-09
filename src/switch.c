@@ -55,7 +55,7 @@ enum EXIT_CODES switch_add_table(struct device_switch* swtch, port_t port, struc
         return ERROR_INVALID_PORT_PARAM;
     }
 
-    return table_commutation_add(swtch->table_commutation, port, mac);
+    return table_commutation_add(&swtch->table_commutation, port, mac);
 }
 
 /**
