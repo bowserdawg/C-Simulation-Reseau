@@ -16,6 +16,35 @@
 */
 #define OFFSET_FCS_START (TAILLE_PREAMBULE + 1)
 
+
+/* ------------------------------------------------------------------ */
+/*  Codes couleur ANSI                                                  */
+/* ------------------------------------------------------------------ */
+#define ANSI_RESET      "\x1b[0m"
+#define ANSI_BOLD       "\x1b[1m"
+
+#define ANSI_PREAMBULE  "\x1b[38;5;240m"   /* Gris foncé               */
+#define ANSI_SFD        "\x1b[38;5;214m"   /* Orange                   */
+#define ANSI_DST_MAC    "\x1b[38;5;196m"   /* Rouge vif                */
+#define ANSI_SRC_MAC    "\x1b[38;5;208m"   /* Orange clair             */
+#define ANSI_TYPE       "\x1b[38;5;226m"   /* Jaune                    */
+#define ANSI_DATA       "\x1b[38;5;82m"    /* Vert vif                 */
+#define ANSI_FCS        "\x1b[38;5;21m"    /* Bleu vif                 */
+
+/* ------------------------------------------------------------------ */
+/*  Légende trame                                              */
+/* ------------------------------------------------------------------ */
+const char *TRAME_LEGENDE =
+    "\n=== Legende de la trame Ethernet ===\n"
+    "\x1b[38;5;240m" "██ Préambule " ANSI_RESET "(7 octets)  — Synchronisation (0xAA x 7)\n"
+    "\x1b[38;5;214m" "██ SFD       " ANSI_RESET "(1 octet)   — Start Frame Delimiter (0xAB)\n"
+    "\x1b[38;5;196m" "██ MAC dest  " ANSI_RESET "(6 octets)  — Adresse MAC de destination\n"
+    "\x1b[38;5;208m" "██ MAC src   " ANSI_RESET "(6 octets)  — Adresse MAC source\n"
+    "\x1b[38;5;226m" "██ Type      " ANSI_RESET "(2 octets)  — EtherType / protocole\n"
+    "\x1b[38;5;82m"  "██ DATA      " ANSI_RESET "(46+ octets)— Charge utile (bourrage inclus)\n"
+    "\x1b[38;5;21m"  "██ FCS       " ANSI_RESET "(4 octets)  — CRC-32 de contrôle d'intégrité\n"
+    "=====================================\n";
+
 struct trame_before_data {
     octet preambule[TAILLE_PREAMBULE];
     octet SFD;
@@ -251,18 +280,20 @@ const char* trame_get_protocol_str_name(protocol_t protocol)
  * 
  *  Retourne : le code de sortie de la fonction.        
  */
-enum EXIT_CODES trame_to_hex(struct trame tr, char** chaine)
+enum EXIT_CODES trame_to_hex(struct trame tr, char** string)
 {
     /*
      * Chaque octet est représenté par exactement 3 caractères :
      *   2 chiffres hex  +  1 espace (ou '\0' pour le dernier)
      * Taille totale : tr->size * 3 octets.
      */
-    const size_t str_size = tr.size * 3;
 
-    *chaine = malloc(str_size);
-    if (!*chaine)
+    const size_t str_size = tr.size * 3 + 1;  // + 1 pour le \0 final
+
+    *string = malloc(str_size);
+    if (!*string)
     {
+        *string = NULL;
         DEBUG_WARNING(ERROR_BAD_ALLOC);
         return ERROR_BAD_ALLOC;
     }
@@ -272,13 +303,116 @@ enum EXIT_CODES trame_to_hex(struct trame tr, char** chaine)
     for (size_t i = 0; i < tr.size; i++)
     {
         /* Écrit "XX " ou "XX\0" pour le dernier octet */
-        snprintf(*chaine + i * 3, 4, "%02X%c",
+        snprintf(*string + i * 3, 4, "%02X%c",
                  bytes[i],
                  (i < tr.size - 1) ? ' ' : '\0');
     }
 
     return SUCESS;
 }
+
+/**
+ * La légende de la trame obtenu avec trame_to_hex_ansi(struct trame tr)
+ * 
+ */
+const char* trame_get_colored_legend()
+{
+    return TRAME_LEGENDE;
+}
+
+/**
+ * Fonction d'aide pour écrire des bytes en couleur.
+ */
+static size_t write_colored_bytes(char *buf,
+                                  const octet *src, size_t n,
+                                  const char *color,
+                                  bool last_group)
+{
+    size_t written = 0;
+
+    /* Couleur d'entrée pour tout le groupe */
+    written += (size_t)sprintf(buf + written, "%s", color);
+
+    for (size_t i = 0; i < n; i++)
+    {
+        written += (size_t)sprintf(buf + written, "%02X", src[i]);
+
+        /* Espace séparateur sauf après le tout dernier octet de la trame */
+        if (!last_group || i < n - 1)
+            buf[written++] = ' ';
+    }
+
+    /* Reset après le groupe */
+    written += (size_t)sprintf(buf + written, "%s", ANSI_RESET);
+
+    return written;
+}
+
+/**
+ * Donne une chaine de caractére avec des couleurs différents pour chaque partie !
+ * Utilise les caractéres ANSI.
+ * 
+ * Voir aussi TRAME_LEGENDE pour la légende du train.
+ * 
+ *      - tr : La trame qui va etre affiché. 
+ * 
+ *      - chaine : La chaine de la représentation de la trame en ANSI.
+ * 
+ * Retourne : Un code d'erreur.
+ */
+enum EXIT_CODES trame_to_hex_ansi(struct trame tr, char** string)
+{
+    /*
+     * Estimation pessimiste de la taille du buffer :
+     *   - chaque octet        : 3 caractères ("XX ")
+     *   - codes ANSI par groupe : ~15 caractères × 7 groupes pour le code
+     *                             + ~5 caractères × 7 groupes pour le reset
+     * On alloue tr->size * 3 + 512 octets pour les séquences ANSI.
+     */
+    const size_t buf_size = tr.size * 3 + 512;
+
+    char *hex = malloc(buf_size);
+    if (!hex)
+    {
+        *string = NULL;
+        DEBUG_WARNING(ERROR_BAD_ALLOC);
+        return ERROR_BAD_ALLOC;
+    }
+
+    const octet *raw = (const octet *)tr.trame;
+    size_t offset_raw = 0;   /* position dans les octets bruts de la trame */
+    size_t offset_hex = 0;   /* position d'écriture dans la chaîne résultat */
+
+    /* Taille des champs fixes */
+    const size_t sz_pre  = TAILLE_PREAMBULE;
+    const size_t sz_sfd  = 1;
+    const size_t sz_mac  = sizeof(struct mac);           /* 6 octets */
+    const size_t sz_type = 2;
+    const size_t sz_fcs  = sizeof(struct trame_after_data); /* 4 octets */
+    const size_t sz_data = tr.size
+                           - sizeof(struct trame_before_data)
+                           - sz_fcs;
+
+    // Define qui permet de "colorier" facilement la chaine
+
+#define WRITE(src, n, color, last) \
+    offset_hex += write_colored_bytes(hex + offset_hex, (src), (n), (color), (last)); \
+    offset_raw += (n);
+
+    WRITE(raw + offset_raw, sz_pre,  ANSI_PREAMBULE, false)
+    WRITE(raw + offset_raw, sz_sfd,  ANSI_SFD,       false)
+    WRITE(raw + offset_raw, sz_mac,  ANSI_DST_MAC,   false)
+    WRITE(raw + offset_raw, sz_mac,  ANSI_SRC_MAC,   false)
+    WRITE(raw + offset_raw, sz_type, ANSI_TYPE,       false)
+    WRITE(raw + offset_raw, sz_data, ANSI_DATA,       false)
+    WRITE(raw + offset_raw, sz_fcs,  ANSI_FCS,        true)
+#undef WRITE  // Undef car on n'en à plus besoin
+
+    hex[offset_hex] = '\0';
+    *string = hex;
+    return SUCESS;
+}
+
 
 /**
  * Détruit la trame!

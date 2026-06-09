@@ -102,6 +102,26 @@ const char* trame_get_protocol_str_name(protocol_t protocol);
 enum EXIT_CODES trame_to_hex(struct trame tr, char** chaine);
 
 /**
+ * La légende de la trame obtenu avec trame_to_hex_ansi(struct trame tr)
+ * 
+ */
+const char* trame_get_colored_legend();
+
+/**
+ * Donne une chaine de caractére avec des couleurs différents pour chaque partie !
+ * Utilise les caractéres ANSI.
+ * 
+ * Voir aussi TRAME_LEGENDE pour la légende du train.
+ * 
+ *      - tr : La trame qui va etre affiché. 
+ * 
+ *      - chaine : La chaine de la représentation de la trame en ANSI.
+ * 
+ * Retourne : Un code d'erreur.
+ */
+enum EXIT_CODES trame_to_hex_ansi(struct trame tr, char** string);
+
+/**
  * Détruit la trame!
  */
 void deinit_trame(struct trame* tr);
