@@ -83,6 +83,8 @@ static int get_inputs()
     memset(first, 0, sizeof(first));
     memset(last,  0, sizeof(last) );
 
+    fprintf(stderr, ">>$ ");
+
     // fgets c'est trop bien
     if (fgets(line, sizeof(line), stdin) == NULL) 
     {
@@ -154,6 +156,7 @@ void parse_one()
     }
     else if(strcmp(first, "exit") == 0)
     {
+        fprintf(stderr, "Exiting program\n");
         close_program();
     }
     else
@@ -188,7 +191,7 @@ enum EXIT_CODES user_loop()
         {
             fprintf(stderr, "%s Current ticks : %zu\n %s \n", ANSI_YELLOW, program.tick_counter, ANSI_RESET);
             continue_program(false);
-            while(!program_continues())
+            while(!program_continues() && !program_should_close())
             {
                 // Les ajoutes dans les buffers
                 int count = get_inputs();
