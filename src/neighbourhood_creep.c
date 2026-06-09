@@ -74,6 +74,9 @@ struct house {
     bool is_present;
 };
 
+/**
+ *  Contient des cases vides qui peuvent etre peuple.
+ */
 struct neighbourhood {
     struct creep creep;
     struct house* houses;

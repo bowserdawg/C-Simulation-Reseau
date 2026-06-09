@@ -149,7 +149,7 @@ uint64_t mac_to_long(struct mac mac)
     int shift = 40;
     for(size_t i = 0; i < MAC_NB_OCTET; ++i)
     {
-        u64 = (u64 + mac.mac_array[i]) << shift;
+        u64 |= ((uint64_t)mac.mac_array[i]) << shift;
         shift -= 8;
     }   
     return u64;

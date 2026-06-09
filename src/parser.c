@@ -181,8 +181,8 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
             char* ip_str = strtok(NULL, ";");
             
             // Version tableau (va etre convertie)
-            octet_ip_t  mac[MAC_BYTE_SIZE] = {0};
-            octet_mac_t ip [IP_BYTE_SIZE]  = {0};
+            octet_mac_t mac[MAC_BYTE_SIZE] = {0};
+            octet_ip_t ip [IP_BYTE_SIZE]  = {0};
 
             // Les addresses mac ou ip n'existes pas
             if(!mac_str || !ip_str)
@@ -240,7 +240,7 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
 
             // Les paramétres qu'il faut  pour construire un switch
             struct mac ad_mac = init_mac(mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
-            port_t nb_port = (priority_t)atoi(nb_port_str);
+            port_t nb_port = (port_t)atoi(nb_port_str);
             priority_t prio = (priority_t)atoi(pri_str);
             
             struct optional_device_switch swtch = init_switch(ad_mac, nb_port, prio);
