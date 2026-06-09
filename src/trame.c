@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define BOURRAGE        46
 #define TAILLE_PREAMBULE 7
@@ -60,9 +61,9 @@ static uint32_t crc32(const void *buf, size_t len)
 *
 *      protcol_t : Le protocole de la trame.
 *
-* Retourne : Une nouvelle trame ethernet.
+* Retourne : Une optional d'une nouvelle trame ethernet.
 */
-struct trame init_trame(size_t data_size, const void *data,
+struct optional_tram init_trame(size_t data_size, const void *data,
                         struct mac dest, struct mac src,
                         protocol_t protocol)
 {
@@ -72,13 +73,18 @@ struct trame init_trame(size_t data_size, const void *data,
     if (data_size < BOURRAGE)
         data_size = BOURRAGE;
 
-    struct trame tr;
+    struct trame tr = {0};
     tr.size = sizeof(struct trame_before_data)
             + data_size
             + sizeof(struct trame_after_data);
 
     // tr.trame
     tr.trame = malloc(tr.size);
+    if(!tr.trame)
+    {
+        DEBUG_WARNING(ERROR_BAD_ALLOC);
+        return (struct optional_tram){.tr = tr, .exit_code = ERROR_BAD_ALLOC};
+    }
 
     /* --- En-tête --- */
     struct trame_before_data *trame_part1 = (struct trame_before_data *)tr.trame;
@@ -119,13 +125,13 @@ struct trame init_trame(size_t data_size, const void *data,
     ftr->FCS[2] = (crc >> 16) & 0xFF;
     ftr->FCS[3] = (crc >> 24) & 0xFF;
 
-    return tr;
+    return (struct optional_tram){.tr = tr, .exit_code = SUCESS};
 }
 
 /**   
 *    Utilitaire interne : pointeur vers l'en-tête                      
 */
-static const struct trame_before_data *get_header(const struct trame tr)
+static const struct trame_before_data *get_header(struct trame tr)
 {
     return (const struct trame_before_data *)tr.trame;
 }
@@ -134,7 +140,7 @@ static const struct trame_before_data *get_header(const struct trame tr)
  * trame_get_destination                                                     
  *  Retourne l'adresse MAC de destination
  */
-struct mac trame_get_destination(const struct trame tr)
+struct mac trame_get_destination(struct trame tr)
 {
     return get_header(tr)->destination;
 }
@@ -143,7 +149,7 @@ struct mac trame_get_destination(const struct trame tr)
  * trame_get_source 
  * Retourne l'adresse MAC source. 
  */
-struct mac trame_get_source(const struct trame tr)
+struct mac trame_get_source(struct trame tr)
 {
     return get_header(tr)->source;
 }
@@ -153,7 +159,7 @@ struct mac trame_get_source(const struct trame tr)
  * get_protocol 
  * Retourne le protocole (2 octets, big-endian). 
  */
-protocol_t trame_get_protocol(const struct trame tr)
+protocol_t trame_get_protocol(struct trame tr)
 {
     const struct trame_before_data *hdr = get_header(tr);
     return (protocol_t)((hdr->type[0] << 8) | hdr->type[1]);
@@ -170,7 +176,7 @@ protocol_t trame_get_protocol(const struct trame tr)
  * 
  * Retourne : La taille du bloc DATA.
  */
-size_t trame_get_data(const struct trame tr, const void **data)
+size_t trame_get_data(struct trame tr, const void **data)
 {
     /* Le bloc DATA démarre juste après l'en-tête fixe. */
     *data = (const void *)(tr.trame + sizeof(struct trame_before_data));
@@ -185,7 +191,7 @@ size_t trame_get_data(const struct trame tr, const void **data)
  * Retourne le FCS stocké dans la trame (valeur brute 32 bits,
  * little-endian tel que stocké par init_trame). 
  */
-uint32_t trame_get_fcs(const struct trame tr)
+uint32_t trame_get_fcs(struct trame tr)
 {
     const struct trame_after_data *ftr =
         (const struct trame_after_data *)(tr.trame
@@ -203,7 +209,7 @@ uint32_t trame_get_fcs(const struct trame tr)
  *  "Vérifie l'intégrité de la trame en recalculant le CRC-32 et en   
  *  le comparant au FCS stocké. Retourne true si la trame est saine"
  */
-bool trame_is_fcs_valid(const struct trame tr)
+bool trame_is_fcs_valid(struct trame tr)
 {
     /* Même zone que dans init_trame */
     const void *fcs_start = tr.trame + OFFSET_FCS_START;
@@ -214,10 +220,72 @@ bool trame_is_fcs_valid(const struct trame tr)
     return crc32(fcs_start, fcs_len) == trame_get_fcs(tr);
 }
 
+
+/**
+ * Donne le nom en chaine de caractére du protocol.
+ */
+const char* trame_get_protocol_str_name(protocol_t protocol)
+{
+    switch(protocol)
+    {
+    case 0x0800:
+        return "IPv4";
+    case 0x0806:
+        return "ARP";
+    case 0x86DD:
+        return "IPv6";
+    default:
+        return "INVALID";
+    }
+}
+
+/**
+ *  Retourne une chaîne allouée dynamiquement contenant la             
+ *  représentation hexadécimale de chaque octet de la trame,           
+ *  séparés par des espaces.  
+ *  Format : "AA BB CC DD ..."
+ * 
+ *  tr : La trame qui va etre affiché.
+ * 
+ *  chaine : La chaine qui va avoir la représentation en héxadécimale de la chaine.
+ * 
+ *  Retourne : le code de sortie de la fonction.        
+ */
+enum EXIT_CODES trame_to_hex(struct trame tr, char** chaine)
+{
+    /*
+     * Chaque octet est représenté par exactement 3 caractères :
+     *   2 chiffres hex  +  1 espace (ou '\0' pour le dernier)
+     * Taille totale : tr->size * 3 octets.
+     */
+    const size_t str_size = tr.size * 3;
+
+    *chaine = malloc(str_size);
+    if (!*chaine)
+    {
+        DEBUG_WARNING(ERROR_BAD_ALLOC);
+        return ERROR_BAD_ALLOC;
+    }
+
+    const octet *bytes = (const octet *)tr.trame;
+
+    for (size_t i = 0; i < tr.size; i++)
+    {
+        /* Écrit "XX " ou "XX\0" pour le dernier octet */
+        snprintf(*chaine + i * 3, 4, "%02X%c",
+                 bytes[i],
+                 (i < tr.size - 1) ? ' ' : '\0');
+    }
+
+    return SUCESS;
+}
+
 /**
  * Détruit la trame!
  */
-void deinit_trame(struct trame tr)
+void deinit_trame(struct trame* tr)
 {
-    free(tr.trame);
+    free(tr->trame);
+    tr->trame = NULL;
+    tr->size = 0;
 }

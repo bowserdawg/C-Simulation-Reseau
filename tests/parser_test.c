@@ -28,11 +28,11 @@ void test_parser()
     DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 1, 2).exit_code == SUCESS, "FAIL net_graph_devices_are_connected bad exit code.\n");
     DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 0, 3).exit_code == SUCESS, "FAIL net_graph_devices_are_connected bad exit code.\n");
     DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 2, 4).exit_code == SUCESS, "FAIL net_graph_devices_are_connected bad exit code.\n");
-    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 0, 1).boolean == true, "FAIL net_graph_devices_are_connected bad exit code.\n");
-    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 0, 2).boolean == true, "FAIL net_graph_devices_are_connected bad exit code.\n");
-    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 1, 2).boolean == true, "FAIL net_graph_devices_are_connected bad exit code.\n");
-    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 0, 3).boolean == true, "FAIL net_graph_devices_are_connected bad exit code.\n");
-    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 2, 4).boolean == true, "FAIL net_graph_devices_are_connected bad exit code.\n");
+    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 0, 1).boolean == true, "FAIL net_graph_devices_are_connected bad result.\n");
+    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 0, 2).boolean == true, "FAIL net_graph_devices_are_connected bad result.\n");
+    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 1, 2).boolean == true, "FAIL net_graph_devices_are_connected bad result.\n");
+    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 0, 3).boolean == true, "FAIL net_graph_devices_are_connected bad result.\n");
+    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 2, 4).boolean == true, "FAIL net_graph_devices_are_connected bad result.\n");
 
 
     // devrait pas marcher
@@ -41,11 +41,11 @@ void test_parser()
     DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 4, 1).exit_code == SUCESS, "FAIL net_graph_devices_are_connected bad exit code.\n");
     DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 2, 3).exit_code == SUCESS, "FAIL net_graph_devices_are_connected bad exit code.\n");
     DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 2, 2).exit_code == SUCESS, "FAIL net_graph_devices_are_connected bad exit code.\n");
-    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 8, 1).boolean == false, "FAIL net_graph_devices_are_connected bad exit code.\n");
-    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 9, 2).boolean == false, "FAIL net_graph_devices_are_connected bad exit code.\n");
-    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 4, 1).boolean == false, "FAIL net_graph_devices_are_connected bad exit code.\n");
-    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 2, 3).boolean == false, "FAIL net_graph_devices_are_connected bad exit code.\n");
-    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 2, 2).boolean == false, "FAIL net_graph_devices_are_connected bad exit code.\n");
+    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 8, 1).boolean == false, "FAIL net_graph_devices_are_connected bad result.\n");
+    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 9, 2).boolean == false, "FAIL net_graph_devices_are_connected bad result.\n");
+    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 4, 1).boolean == false, "FAIL net_graph_devices_are_connected bad result.\n");
+    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 2, 3).boolean == false, "FAIL net_graph_devices_are_connected bad result.\n");
+    DEBUG_ASSERT_W_MESSAGE(net_graph_devices_are_connected(&graph, 2, 2).boolean == false, "FAIL net_graph_devices_are_connected bad result.\n");
 
 
     deinit_graph(&graph);

@@ -214,6 +214,7 @@ static enum EXIT_CODES add_node(const struct net_graph* graph, size_t device_ind
         free(node->d_connections);                                  // free
         // Affecter le nouveau bloc mémoire à la connection.
         node->d_connections = connecs;
+        node->cap_connected_nodes = capacity*2;
     }
 
     // Ajouter le pointeur vers l'autre sommet

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "address_mac.h"
+#include "errors.h"
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -11,6 +12,11 @@ typedef uint16_t protocol_t;
 struct trame {
     char  *trame;  // l'utilisateur peut modifier la trame mais on s'en fout. C'est leur probleme.
     size_t size;
+};
+
+struct optional_tram {
+    struct trame tr;
+    enum EXIT_CODES exit_code;
 };
 
 /**
@@ -26,9 +32,9 @@ struct trame {
 *
 *      protcol_t : Le protocole de la trame.
 *
-* Retourne : Une nouvelle trame ethernet.
+* Retourne : Une optional d'une nouvelle trame ethernet.
 */
-struct trame init_trame(size_t data_size, const void *data,
+struct optional_tram init_trame(size_t data_size, const void *data,
                         struct mac dest, struct mac src,
                         protocol_t protocol);
 
@@ -36,19 +42,19 @@ struct trame init_trame(size_t data_size, const void *data,
  * trame_get_destination                                                     
  *  Retourne l'adresse MAC de destination
  */
-struct mac trame_get_destination(const struct trame tr);
+struct mac trame_get_destination(struct trame tr);
 
 /**
  * trame_get_source 
  * Retourne l'adresse MAC source. 
  */
-struct mac trame_get_source(const struct trame tr);
+struct mac trame_get_source(struct trame tr);
 
 /**
  * get_protocol 
  * Retourne le protocole (2 octets, big-endian). 
  */
-protocol_t trame_get_protocol(const struct trame tr);
+protocol_t trame_get_protocol(struct trame tr);
 
 /**
  * Fournit un pointeur (en lecture seule) vers le bloc DATA de la     
@@ -61,22 +67,41 @@ protocol_t trame_get_protocol(const struct trame tr);
  * 
  * Retourne : La taille du bloc DATA.
  */
-size_t trame_get_data(const struct trame tr, const void **data);
+size_t trame_get_data(struct trame tr, const void **data);
 
 /**
  * Retourne le FCS stocké dans la trame (valeur brute 32 bits,
  * little-endian tel que stocké par init_trame). 
  */
-uint32_t trame_get_fcs(const struct trame tr);
+uint32_t trame_get_fcs(struct trame tr);
 
 /**
  *  Fonction bonus généré par l'IA.
  *  "Vérifie l'intégrité de la trame en recalculant le CRC-32 et en   
  *  le comparant au FCS stocké. Retourne true si la trame est saine"
  */
-bool trame_is_fcs_valid(const struct trame tr);
+bool trame_is_fcs_valid(struct trame tr);
+
+/**
+ * Donne le nom en chaine de caractére du protocol.
+ */
+const char* trame_get_protocol_str_name(protocol_t protocol);
+
+/**
+ *  Retourne une chaîne allouée dynamiquement contenant la             
+ *  représentation hexadécimale de chaque octet de la trame,           
+ *  séparés par des espaces.  
+ *  Format : "AA BB CC DD ..."
+ * 
+ *  tr : La trame qui va etre affiché.
+ * 
+ *  chaine : La chaine qui va avoir la représentation en héxadécimale de la chaine.
+ * 
+ *  Retourne : le code de sortie de la fonction.        
+ */
+enum EXIT_CODES trame_to_hex(struct trame tr, char** chaine);
 
 /**
  * Détruit la trame!
  */
-void deinit_trame(struct trame tr);
+void deinit_trame(struct trame* tr);
