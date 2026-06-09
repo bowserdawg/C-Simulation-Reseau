@@ -1,6 +1,7 @@
 #include "address_mac.h"
 #include "address_ip.h"
 #include "trame.h"
+#include "global.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -15,7 +16,6 @@
    (après préambule 7 octets + SFD 1 octet) 
 */
 #define OFFSET_FCS_START (TAILLE_PREAMBULE + 1)
-
 
 /* ------------------------------------------------------------------ */
 /*  Codes couleur ANSI                                                  */

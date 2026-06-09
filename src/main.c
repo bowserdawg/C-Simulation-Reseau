@@ -8,6 +8,7 @@
 #include "global.h"
 #include "trame.h"
 #include "neighbourhood_creep.h"
+#include "user_interface.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
         if(exit_code == SUCESS)
         {
             // start la simulation ici
+            user_loop();
         }
         else
         {
