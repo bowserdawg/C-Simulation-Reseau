@@ -107,7 +107,8 @@ const char* INSTRUCTIONS =
     "\tbp       : Sets a new breakpoint frequency.\n \t\tEx: bp 1000\n"
     "\tcontinue : Continues the program.\n"
     "\texit     : Exits the program.\n"
-    "\thelp     : Show these informations.\n";
+    "\thelp     : Show these informations.\n"
+    "\tdisplay  : Show all the nodes and devices in the network\n";
 
 static void parse_two()
 {
