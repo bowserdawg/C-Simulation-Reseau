@@ -54,7 +54,7 @@ static enum EXIT_CODES parse_ip(const char *s, unsigned char ip[4])
     return SUCESS;
 }
 
-/* Pour effacer les '\r' and '\n' à la fin d'une ligne. */
+/* Pour effacer les '\r' et '\n' à la fin d'une ligne. */
 static void chomp(char *line)
 {
     size_t len = strlen(line);
@@ -137,7 +137,7 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
     }
     *graph = op_net.graph;
 
-                         /* Remplir le réseau avce les machines */
+                         /* Remplir le réseau avec les machines */
     /*************************************************************************************/
     for(size_t i = 0; i < n_devices; ++i)
     {
@@ -166,12 +166,7 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
 
         // Definir le type de la machine
         enum DEVICE_TYPE type = atoi(tok);
-        if(type == 0)
-        {
-            fprintf(stderr, "%s: invalid device type at %zu\n %s \n", G_APP_NAME, i, line);
-            ex_code = ERROR_PARSING_FORMAT_DEVICES;
-            goto end;
-        }
+        
 
         if(type == DEV_STATION)
         {

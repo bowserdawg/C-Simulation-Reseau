@@ -45,7 +45,7 @@ struct optional_bool {
  * 
  *       nb_devices : Nombre de machine dans le réseau.
  * 
- * Retourne : Un optional qui peut contenir un graphe ou un méssage d'erreur.
+ * Retourne : Un optional qui peut contenir un graphe ou un message d'erreur.
  */
 struct optional_net_graph init_net_graph(size_t nb_devices);
 
