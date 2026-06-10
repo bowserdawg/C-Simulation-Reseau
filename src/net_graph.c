@@ -32,18 +32,18 @@ struct connections {
  * 
  * Retourne : Un optional qui peut contenir un graphe ou un méssage d'erreur.
  */
-struct optional_net_graph init_net_graph(size_t nb_devices)
+struct optional_net_graph init_net_graph(size_t devices_capacity)
 {
     struct net_graph g = {0};
 
     // Calloc permet que tous les pointeurs soit null au debut.
-    g.nodes = calloc(nb_devices, sizeof(struct net_node));
+    g.nodes = calloc(devices_capacity, sizeof(struct net_node));
     if(g.nodes == NULL)
     {
         return (struct optional_net_graph){ .graph = {0}, .exit_code = ERROR_BAD_ALLOC };
     }
     g.nb_devices = 0;
-    g.cap_devices = nb_devices;
+    g.cap_devices = devices_capacity;
 
     return (struct optional_net_graph){ .graph = g, .exit_code = SUCESS };
 }

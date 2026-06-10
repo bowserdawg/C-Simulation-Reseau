@@ -22,6 +22,9 @@ int main(int argc, char *argv[])
 {
     enum EXIT_CODES exit_code = SUCESS;
     struct net_graph graph = {NULL, 0, 0};
+    
+    struct neighbourhood* neighbourhood;
+
 
     if(argc < 2)
     {
@@ -35,10 +38,25 @@ int main(int argc, char *argv[])
         snprintf(filepath, MAX_FILENAME_LENGTH, "%s%s", CONFIG_FILES_PATH, argv[1]);
 
         exit_code = parse_config(filepath, &graph);
+
         if(exit_code == SUCESS)
         {
-            // start la simulation ici
-            user_loop(graph);
+            struct neighbourhood_ptr_optional nei_op = init_neighbourhood(graph.nb_devices);
+            exit_code = nei_op.exit_code;
+            if(exit_code == SUCESS)
+            {
+                neighbourhood = nei_op.n_ptr;
+
+                // start la simulation ici
+                user_loop(graph, neighbourhood);
+
+                deinit_neighbourhood(neighbourhood);
+            }
+            else
+            {
+                DEBUG_WARNING(SUCESS);
+                fprintf(stderr, "%s: Error initialising network\n", G_APP_NAME);
+            }
         }
         else
         {

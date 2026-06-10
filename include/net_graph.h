@@ -52,7 +52,7 @@ struct optional_device {
  * 
  * Retourne : Un optional qui peut contenir un graphe ou un méssage d'erreur.
  */
-struct optional_net_graph init_net_graph(size_t nb_devices);
+struct optional_net_graph init_net_graph(size_t devices_capacity);
 
 
 /**

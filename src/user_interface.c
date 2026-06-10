@@ -2,6 +2,8 @@
 #include "errors.h"
 #include "net_graph.h"
 #include "networking_logic.h"
+#include "neighbourhood_creep.h"
+
 
 #include <stdio.h>
 #include <string.h>
@@ -154,6 +156,10 @@ static void c_display(struct net_graph* graph)
         fprintf(stderr, "Erreur dans l'affichage du réseau.\n");
     }
 }
+static void c_send()
+{
+    fprintf(stderr, "Hello\n");
+}
 
 /****Fonctions d'aides****/
 
@@ -213,6 +219,14 @@ static void parse_commands(int count, struct net_graph* graph)
         c_bp();
     }
 
+    // Attedns 4 arguments
+    else if(is_equal_str(first, "send"))
+    { 
+        if(invalid_args_message("bp", count, 1))
+            return;
+        c_send();
+    }
+
     // Invalid
     else invalid_command_message();
 }
@@ -243,7 +257,7 @@ static void display_infos()
  *      - help     : Show these informations.
  *      - display  : Show all the nodes and devices in the network
  */
-enum EXIT_CODES user_loop(struct net_graph graph)
+enum EXIT_CODES user_loop(struct net_graph graph, struct neighbourhood * neighbourhood)
 {
     enum EXIT_CODES ex_code = SUCESS;
     display_infos();
