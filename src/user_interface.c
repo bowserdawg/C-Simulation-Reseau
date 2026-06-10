@@ -74,10 +74,10 @@ static void close_program()
 /**********INPUTS**********/
 /**************************/
 
-#define LINE_SIZE 100
+#define LINE_SIZE 1250
 #define BUFFER_SIZE 64
 char line[LINE_SIZE];
-char first[BUFFER_SIZE], second[BUFFER_SIZE], third[BUFFER_SIZE], fourth[BUFFER_SIZE];
+char first[BUFFER_SIZE], second[BUFFER_SIZE], third[BUFFER_SIZE], fourth[BUFFER_SIZE], fifth[BUFFER_SIZE];
 
 /**
  * Recois les données écrites par l'utilisateur.
@@ -86,11 +86,12 @@ char first[BUFFER_SIZE], second[BUFFER_SIZE], third[BUFFER_SIZE], fourth[BUFFER_
  */
 static int get_inputs()
 {
-    memset(line,  0, sizeof(line) );
-    memset(first, 0, sizeof(first));
-    memset(second,  0, sizeof(second) );
-    memset(second,  0, sizeof(third) );
-    memset(second,  0, sizeof(fourth) );
+    memset(line,  0, sizeof(line)  );
+    memset(first, 0, sizeof(first) );
+    memset(second,0, sizeof(second));
+    memset(third, 0, sizeof(third) );
+    memset(fourth,0, sizeof(fourth));
+    memset(fifth, 0, sizeof(fourth));
 
     // Pour un meileur affichage input
     fprintf(stderr, ">>$ ");
@@ -102,12 +103,13 @@ static int get_inputs()
         return ERROR_COULDNT_READ;
     }
 
-    int count = sscanf(line, "%63s %63s %63s %63s", first, second, third, fourth);
+    int count = sscanf(line, "%63s %63s %63s %63s %63s", first, second, third, fourth, fifth);
 
     first[BUFFER_SIZE-1]   = '\0';
     second[BUFFER_SIZE-1]  = '\0';
     third[BUFFER_SIZE-1]   = '\0';
     fourth[BUFFER_SIZE-1]  = '\0';
+    fifth[BUFFER_SIZE-1]  = '\0';
 
     return count;
 }
@@ -153,12 +155,35 @@ static void c_display(struct net_graph* graph)
     if(ex != SUCESS)
     {
         DEBUG_WARNING(ex);
-        fprintf(stderr, "Erreur dans l'affichage du réseau.\n");
+        fprintf(stderr, "Error while displaying network.\n");
     }
 }
-static void c_send()
+static void c_send(struct net_graph* graph, struct neighbourhood* nei)
 {
     fprintf(stderr, "Hello\n");
+
+    size_t idx1 = INVALID_INDEX, idx2 = INVALID_INDEX;
+
+    if(sscanf(second,"%zu", &idx1) != 1)
+    {
+        fprintf(stderr, "Error: argument 1 must be an integer\n");
+        return;
+    }
+    if(sscanf(third, "%zu", &idx2) != 1)
+    {
+        fprintf(stderr, "Error: argument 2 must be an integer\n");
+        return;
+    }
+
+    if(idx1 >= graph->nb_devices || idx2 >= graph->nb_devices)
+    {
+        fprintf(stderr, "Error: indexes must be bewteen 0 and %zu\n", graph->nb_devices);
+        return;
+    }
+
+
+    size_t size = strlen(fourth);
+    start_sending_packet(graph, nei, idx1, idx2, fourth, size, 20);
 }
 
 /****Fonctions d'aides****/
@@ -177,13 +202,13 @@ static bool invalid_args_message(const char* string, int args, int expected)
 {
     if(args != expected)
     {
-        fprintf(stderr, "Error : '%s' waited for %d arguments\n", string, args);
+        fprintf(stderr, "Error : '%s' waited for %d arguments\n", string, expected);
         return true;
     }
     return false;
 }
 
-static void parse_commands(int count, struct net_graph* graph)
+static void parse_commands(int count, struct net_graph* graph, struct neighbourhood * neighbourhood)
 {
     // Attends 1 argument
     if(is_equal_str(first, "help"))         
@@ -219,12 +244,12 @@ static void parse_commands(int count, struct net_graph* graph)
         c_bp();
     }
 
-    // Attedns 4 arguments
+    // Attends 4 arguments
     else if(is_equal_str(first, "send"))
     { 
-        if(invalid_args_message("bp", count, 1))
+        if(invalid_args_message("send", count, 4))
             return;
-        c_send();
+        c_send(graph, neighbourhood);
     }
 
     // Invalid
@@ -273,7 +298,7 @@ enum EXIT_CODES user_loop(struct net_graph graph, struct neighbourhood * neighbo
                 // Les ajoutes dans les buffers
                 int count = get_inputs();
 
-                parse_commands(count, &graph);
+                parse_commands(count, &graph, neighbourhood);
             }
         }
 

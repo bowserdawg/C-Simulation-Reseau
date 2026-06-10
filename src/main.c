@@ -12,9 +12,22 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define CONFIG_FILES_PATH "./data/configs/"
 #define MAX_FILENAME_LENGTH 256
+
+#define ANSI_RESET      "\x1b[0m"
+const char *TRAME_LEGENDE_COPIE =
+    "\n=== Legende de la trame Ethernet ===\n"
+    "\x1b[38;5;240m" "██ Préambule " ANSI_RESET "(7 octets)  — Synchronisation (0xAA x 7)\n"
+    "\x1b[38;5;214m" "██ SFD       " ANSI_RESET "(1 octet)   — Start Frame Delimiter (0xAB)\n"
+    "\x1b[38;5;196m" "██ MAC dest  " ANSI_RESET "(6 octets)  — Adresse MAC de destination\n"
+    "\x1b[38;5;208m" "██ MAC src   " ANSI_RESET "(6 octets)  — Adresse MAC source\n"
+    "\x1b[38;5;226m" "██ Type      " ANSI_RESET "(2 octets)  — EtherType / protocole\n"
+    "\x1b[38;5;82m"  "██ DATA      " ANSI_RESET "(46+ octets)— Charge utile (bourrage inclus)\n"
+    "\x1b[38;5;21m"  "██ FCS       " ANSI_RESET "(4 octets)  — CRC-32 de contrôle d'intégrité\n"
+    "=====================================\n";
 
 const char* DATA = "Hello World";
 
@@ -63,7 +76,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: Parsing failed, exiting program\n", G_APP_NAME);
         }
     }
-    
+
     // On peut free meme s'il est NULL car c'est possible.
     deinit_graph(&graph);
     

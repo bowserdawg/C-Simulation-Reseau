@@ -2,10 +2,11 @@
 
 #include "errors.h"
 #include "global.h"
-
-#include <stdint.h>
 #include "station.h"
 #include "switch.h"
+#include "neighbourhood_creep.h"
+
+#include <stdint.h>
 
 // Le cout d'un lien.
 typedef uint32_t cost_t;
@@ -110,6 +111,11 @@ struct optional_device net_graph_get_machine(const struct net_graph* graph, size
  * Le pointeur donne doit etre free aprés
  */
 size_t net_graph_surrounding_indexes(struct net_graph* graphe, size_t** indexes, size_t index);
+
+/**
+ * Trouve une machine avec une adresse spécifique.
+ */
+struct optional_device neighbourhood_get_device_from_mac(struct net_graph* graph, struct mac mac);
 
 
 /**

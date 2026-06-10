@@ -424,7 +424,12 @@ void deinit_trame(struct trame* tr)
         DEBUG_WARNING(WARNING_ITEM_NULL_FREEING);
         return;
     } 
-    free(tr->trame);
+
+    if(tr->trame != NULL)
+    {
+        free(tr->trame);
+    }
+
     tr->trame = NULL;
     tr->size = 0;
 }

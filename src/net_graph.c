@@ -375,6 +375,51 @@ size_t net_graph_surrounding_indexes(struct net_graph* graphe, size_t** indexes,
 }
 
 /**
+ * Trouve une machine avec une adresse spécifique.
+ */
+struct optional_device neighbourhood_get_device_from_mac(struct net_graph* graph, struct mac mac)
+{
+    union device* device = NULL;
+    enum DEVICE_TYPE type = NONE;
+    enum EXIT_CODES ex_code = SUCESS;
+
+    if(!graph || !graph->nodes)
+    {
+        ex_code = ERROR_NULL_POINTER_PARAM;
+        DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
+        goto end;
+    }
+
+    for(size_t i = 0; i < graph->nb_devices; ++i)
+    {
+        if(graph->nodes[i].device_type == STATION)
+        {
+            if(mac_equals(mac, graph->nodes[i].device.d_station.mac))
+            {
+                device = &graph->nodes[i].device;
+                type = STATION;
+                break;
+            }
+        }
+        else if(graph->nodes[i].device_type == SWITCH)
+        {
+            if(mac_equals(mac, graph->nodes[i].device.d_switch._mac))
+            {
+                device = &graph->nodes[i].device;
+                type = SWITCH;
+                break;
+            }
+        }
+    }
+
+    end:
+    return (struct optional_device) {
+        .device = device, 
+        .type = type, 
+        .exit_code = ex_code};
+}
+
+/**
  * Detruit le graphe du réseau. Free aussi les switchs du réseau.
  * 
  *      graph : Le graphe qui va etre détruit.
