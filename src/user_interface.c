@@ -70,6 +70,14 @@ static void close_program()
     program.program_should_close = true;
 }
 
+/**
+ * Donne le nombre de tick.
+ */
+size_t get_global_tick()
+{
+    return program.tick_counter;
+}
+
 /**************************/
 /**********INPUTS**********/
 /**************************/

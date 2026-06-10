@@ -4,3 +4,8 @@
 #include "neighbourhood_creep.h"
 
 int user_loop(struct net_graph graph, struct neighbourhood * neighbourhood);
+
+/**
+ * Donne le nombre de tick.
+ */
+size_t get_global_tick();

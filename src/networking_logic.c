@@ -8,6 +8,7 @@
 #include "switch.h"
 #include "net_graph.h"
 #include "table_commutation.h"
+#include "user_interface.h" // Pour get_global_tick()
 
 #include <stdio.h>
 #include <string.h>
@@ -145,13 +146,14 @@ static void queue_packet(struct net_graph* graph, struct neighbourhood* containe
             return;
         }
         char* mac_src = NULL;
-        if(mac_to_string(&mac_src, dest_mac) != SUCESS)
+        if(mac_to_string(&mac_src, src_mac) != SUCESS)
         {
             free(mac_dst);
             return;
         }
         fprintf(stderr, 
-            "Queued packet successfully : \n Ethernet(dest:%s, src:%s) \n Physical(from dev%zu to dev%zu) \n\n",
+            "Queued packet successfully sent at tick %zu: \n Ethernet(dest:%s, src:%s) \n Physical(from dev%zu to dev%zu) \n\n",
+                get_global_tick(),
                 mac_dst,
                 mac_src,
                 p_src_idx,
@@ -274,7 +276,30 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
                 // On met un body quand meme si on veut rajouter des features dans le future.
                 if(dev.type == STATION)
                 {
-                    
+                    size_t p_src_idx = neighbourhood_get_src(container, i);
+                    size_t p_dest_idx = neighbourhood_get_dest(container, i);
+
+                    char* mac_dst = NULL;
+                    if(mac_to_string(&mac_dst, mac_dest) != SUCESS)
+                    {
+                        continue;
+                    }
+                    char* mac_src = NULL;
+                    if(mac_to_string(&mac_src, mac_source) != SUCESS)
+                    {
+                        free(mac_dst);
+                        continue;
+                    }
+
+                    fprintf(stderr, 
+                    "Queued packet successfully arrived at station : \n Ethernet(dest:%s, src:%s) \n Physical(from dev%zu to dev%zu) \n\n",
+                        mac_dst,
+                        mac_src,
+                        p_src_idx,
+                        p_dest_idx
+                    );
+                    free(mac_dst);
+                    free(mac_src);
                 }
                 // Sinon, le switch se gère de router le paquet.
                 else if(dev.type == SWITCH)
@@ -310,11 +335,11 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
                     // Pas de gestion d'erreur, peut faire un gros segfault car le struct trame est trés dangeureux.
                     size_t copy_data_size = trame_get_data(tram_op.tr, &data);
 
+                    // Si l'adresse mac est dans la table de lookup
                     if(port_op.port != INVALID_INDEX)
                     {
-                        //fprintf(stderr, "Stop here %lu\n", ports);
-                        cost_t new_cost  =     net_graph_get_cost_from_two_indexes(graph, dest_new_src, sender);
-                        fprintf(stderr, "copy cost : %u \n", new_cost);
+                        // Unicast
+                        cost_t new_cost  =     net_graph_get_cost_from_two_indexes(graph, dest_new_src, port_op.port);
                         if(new_cost == COST_MAX)
                         {
                             fprintf(stderr, "Couldn't find the copy cost\n");
@@ -329,14 +354,14 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
                     // Sinon, on flood
                     else
                     {
+                        // Multicast
                         for(size_t j = 0; j < nb_indexes; ++j)
                         {
                             enum SWITCH_PORT_STATUS port_status = switch_get_port_status(&dev.device->d_switch, j);
-                            // Envoie un paquet à chaque port non bloqué
-                            if((port_status == ROOT) || (port_status == DESIGNATED) || (j != sender))
+                            // Envoie un paquet à chaque port non bloqué et pas a l'envoyeur
+                            if( ((port_status == ROOT) || (port_status == DESIGNATED)) && (indexes[j] != sender))
                             {
                                 cost_t copy_cost  =     net_graph_get_cost_from_two_indexes(graph, dest_new_src, indexes[j]);
-                                fprintf(stderr, "copy cost : %u \n", copy_cost);
                                 queue_packet(graph, container, mac_dest, mac_source, indexes[j], dest_new_src, copy_cost, data, copy_data_size);
                             }
                         }
