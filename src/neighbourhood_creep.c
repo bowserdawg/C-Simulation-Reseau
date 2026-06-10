@@ -1,6 +1,7 @@
 #include "errors.h"
 #include "trame.h"
 #include "global.h"
+#include "net_graph.h" // pour cost_t
 
 #include <stddef.h>
 #include <string.h> // Pour memcpy
@@ -71,6 +72,10 @@ static enum EXIT_CODES creep_push(struct creep* creep, size_t value)
 
 struct house {
     struct trame* trames;
+    //size_t src_idx;
+    //size_t dest_idx;
+    //cost_t cost;
+    //cost_t remaining_cost;
     bool is_present;
 };
 

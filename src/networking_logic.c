@@ -63,12 +63,6 @@ enum EXIT_CODES network_display(struct net_graph* graph)
                 return ex_code;
             }
 
-            //swtch->nb_port_utilise
-            //swtch->priority
-            //swtch->_mac
-            //swtch->_nbPort
-            //swtch->table_commutation
-
             fprintf(stderr, 
                 "Device %zu : Switch (mac : %s, number of used ports : %zu, port capacity : %zu, priority : %d, size of mac table %zu)\n", 
                 i,
@@ -83,7 +77,7 @@ enum EXIT_CODES network_display(struct net_graph* graph)
         }
 
         // Les connections
-        fprintf(stderr, "Indexe(s) of the devices connected to device %zu [ ", i);
+        fprintf(stderr, "Indexe(s) of the device(s) connected to device %zu [ ", i);
         size_t* ptr = NULL;
         size_t num = net_graph_surrounding_indexes(graph, &ptr,  i);
         if(num == INVALID_INDEX) return ERROR_BAD_ALLOC;

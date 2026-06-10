@@ -23,8 +23,9 @@ G_APP_NAME " " G_VERSION "\n" \
 "For bug reporting instructions, please see: " \
 ANSI_GREEN "https://git.unistra.fr/vasilescu/saesystem/-/issues" ANSI_RESET "\n";
 
-
-/*********PROGRAM***********/
+/**************************/
+/*********PROGRAM**********/
+/**************************/
 
 #define BP_MAX 100000
 
@@ -67,12 +68,14 @@ static void close_program()
     program.program_should_close = true;
 }
 
+/**************************/
 /**********INPUTS**********/
+/**************************/
 
-#define LINE_SIZE 130
+#define LINE_SIZE 100
 #define BUFFER_SIZE 64
 char line[LINE_SIZE];
-char first[BUFFER_SIZE], last[BUFFER_SIZE];
+char first[BUFFER_SIZE], second[BUFFER_SIZE], third[BUFFER_SIZE], fourth[BUFFER_SIZE];
 
 /**
  * Recois les données écrites par l'utilisateur.
@@ -83,8 +86,11 @@ static int get_inputs()
 {
     memset(line,  0, sizeof(line) );
     memset(first, 0, sizeof(first));
-    memset(last,  0, sizeof(last) );
+    memset(second,  0, sizeof(second) );
+    memset(second,  0, sizeof(third) );
+    memset(second,  0, sizeof(fourth) );
 
+    // Pour un meileur affichage input
     fprintf(stderr, ">>$ ");
 
     // fgets c'est trop bien
@@ -94,15 +100,20 @@ static int get_inputs()
         return ERROR_COULDNT_READ;
     }
 
-    int count = sscanf(line, "%63s %63s", first, last);
+    int count = sscanf(line, "%63s %63s %63s %63s", first, second, third, fourth);
 
-    first[BUFFER_SIZE-1] = '\0';
-    last[BUFFER_SIZE-1]  = '\0';
+    first[BUFFER_SIZE-1]   = '\0';
+    second[BUFFER_SIZE-1]  = '\0';
+    third[BUFFER_SIZE-1]   = '\0';
+    fourth[BUFFER_SIZE-1]  = '\0';
 
     return count;
 }
 
-/*****COMMANDES*****/
+/**************************/
+/********COMMANDES*********/
+/**************************/
+
 const char* INSTRUCTIONS = 
     "\tbp       : Sets a new breakpoint frequency.\n \t\tEx: bp 1000\n"
     "\tcontinue : Continues the program.\n"
@@ -110,34 +121,105 @@ const char* INSTRUCTIONS =
     "\thelp     : Show these informations.\n"
     "\tdisplay  : Show all the nodes and devices in the network\n";
 
-static void parse_two()
+/* Commandes pour l'utilisateur */
+static void c_help() {fprintf(stderr, "%s", INSTRUCTIONS);}
+static void c_continue() {continue_program(true);}
+static void c_bp() 
 {
-    /**
-     * bp : Sets a new breakpoint frequency.
-     */
-    if(strcmp(first, "bp") == 0)
+    size_t new_freq = 1;
+    if(sscanf(second, "%zu", &new_freq) != 1)
     {
-        size_t new_freq = 1;
-        if(sscanf(last, "%zu", &new_freq) != 1)
-        {
-            fprintf(stderr, "Error: Invalid arguments, expected an integer value\n");
-            return;
-        }
-        if(new_freq < 1 || new_freq > BP_MAX)
-        {
-            fprintf(stderr, "Error: the new breakpoint frequence should be between 1 and %zu\n", (size_t)BP_MAX);
-            return;
-        }
-        set_new_breakpoint_freq(new_freq);
-        fprintf(stderr, "New bp has been set.\n");
+        fprintf(stderr, "Error: Invalid arguments, expected an integer value\n");
+        return;
     }
-    else
+    if(new_freq < 1 || new_freq > BP_MAX)
     {
-        fprintf(stderr, "Error : invalid command '%s' \n", first);
+        fprintf(stderr, "Error: the new breakpoint frequence should be between 1 and %zu\n", (size_t)BP_MAX);
+        return;
+    }
+    set_new_breakpoint_freq(new_freq);
+    fprintf(stderr, "New bp has been set.\n");
+}
+static void c_exit() 
+{
+    fprintf(stderr, "Exiting program\n");
+    close_program();
+}
+static void c_display(struct net_graph* graph) 
+{
+    enum EXIT_CODES ex = network_display(graph);
+    if(ex != SUCESS)
+    {
+        DEBUG_WARNING(ex);
+        fprintf(stderr, "Erreur dans l'affichage du réseau.\n");
     }
 }
 
+/****Fonctions d'aides****/
+
+static bool is_equal_str(const char* input, const char* command)
+{
+    return strcmp(input, command) == 0;
+}
+
+static void invalid_command_message()
+{
+    fprintf(stderr, "Error : invalid command or command arguments : '%s' \n", first);
+}
+
+static bool invalid_args_message(const char* string, int args, int expected)
+{
+    if(args != expected)
+    {
+        fprintf(stderr, "Error : '%s' waited for %d arguments\n", string, args);
+        return true;
+    }
+    return false;
+}
+
+static void parse_commands(int count, struct net_graph* graph)
+{
+    // Attends 1 argument
+    if(is_equal_str(first, "help"))         
+    {
+        if(invalid_args_message("bp", count, 1))
+            return;
+        c_help();
+    }
+    else if(is_equal_str(first, "continue"))
+    {
+        if(invalid_args_message("bp", count, 1))
+            return;
+        c_continue();
+    }
+    else if(is_equal_str(first, "exit"))
+    {    
+        if(invalid_args_message("bp", count, 1))
+            return;
+        c_exit();
+    }
+    else if(is_equal_str(first, "display"))
+    { 
+        if(invalid_args_message("bp", count, 1))
+            return;
+        c_display(graph);
+    }
+
+    // Attends 2 arguments
+    else if(is_equal_str(first, "bp")) 
+    {
+        if(invalid_args_message("bp", count, 2))
+            return;
+        c_bp();
+    }
+
+    // Invalid
+    else invalid_command_message();
+}
+
+/**************************/
 /*********INFO_TEXT*********/
+/**************************/
 
 static void display_infos()
 {
@@ -146,52 +228,20 @@ static void display_infos()
     printf(INSTRUCTIONS);
 }
 
-
-void parse_one(struct net_graph* graph)
-{
-    if(strcmp(first, "help") == 0)
-    {
-        fprintf(stderr, "%s", INSTRUCTIONS);
-    }
-    else if(strcmp(first, "continue") == 0)
-    {
-        continue_program(true);
-    }
-    else if(strcmp(first, "exit") == 0)
-    {
-        fprintf(stderr, "Exiting program\n");
-        close_program();
-    }
-    else if(strcmp(first, "display") == 0)
-    {
-        enum EXIT_CODES ex = network_display(graph);
-        if(ex != SUCESS)
-        {
-            DEBUG_WARNING(ex);
-            fprintf(stderr, "Erreur dans l'affichage du réseau.\n");
-        }
-    }
-    else
-    {
-        fprintf(stderr, "Error : invalid command '%s' \n", first);
-    }
-}
-
-static void parse_command(int count, struct net_graph* graph)
-{
-    if (count < 1) fprintf(stderr, "Error: expected at least one word\n");
-    else if (count == 1) parse_one(graph);
-    else parse_two();
-}
-
-/*******************/
+/**************************/
+/**************************/
+/**************************/
 
 /**
- * Interace terminal pour l'utilisateur.
+ * Interface terminal pour l'utilisateur.
  * 
  * Listes des commandes possibles:
  * 
  *      - bp : Sets a new breakpoint frequency. Ex: bp 1000
+ *      - continue : Continues the program.
+ *      - exit     : Exits the program.
+ *      - help     : Show these informations.
+ *      - display  : Show all the nodes and devices in the network
  */
 enum EXIT_CODES user_loop(struct net_graph graph)
 {
@@ -209,7 +259,7 @@ enum EXIT_CODES user_loop(struct net_graph graph)
                 // Les ajoutes dans les buffers
                 int count = get_inputs();
 
-                parse_command(count, &graph);
+                parse_commands(count, &graph);
             }
         }
 
