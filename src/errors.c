@@ -104,6 +104,10 @@ static void error_printer(enum EXIT_CODES error)
         fprintf(stderr, "An undefined event has occured. \n");
         break;
 
+    case ERROR_SAME_ITEM_PARAMETER:
+        fprintf(stderr, "Same item shoudlnt be placed in parameter.\n");
+        break;
+
 
     case WARNING_ITEM_NULL_FREEING:
         fprintf(stderr, "This item is null and freeing it isn't needed\n");
@@ -112,7 +116,10 @@ static void error_printer(enum EXIT_CODES error)
     case WARNING_ITEM_NOT_FOUND:
         fprintf(stderr, "The item couldn't be found\n");
         break;
-    
+
+    case WARNING_NO_PORT_ROUTE:
+        fprintf(stderr, "No route to port from destination.\n");
+        break;
 
     default:
         fprintf(stderr, "Unspecified error code : %d\n", error);

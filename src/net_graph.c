@@ -346,8 +346,20 @@ struct optional_device net_graph_get_machine(const struct net_graph* graph, size
  * 
  * Le pointeur donne doit etre free aprés.
  */
-size_t net_graph_surrounding_indexes(struct net_graph* graphe, size_t** indexes, size_t index)
+port_t net_graph_surrounding_indexes(struct net_graph* graphe, size_t** indexes, size_t index)
 {
+    if(!graphe || !graphe->nodes)
+    {
+        DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
+        return INVALID_INDEX;
+    }
+
+    if(index >= graphe->nb_devices)
+    {
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        return INVALID_INDEX;
+    }
+
     *indexes = malloc(sizeof(size_t) * graphe->nodes[index].nb_connected_nodes);
     if(!*indexes)
     {
@@ -375,9 +387,48 @@ size_t net_graph_surrounding_indexes(struct net_graph* graphe, size_t** indexes,
 }
 
 /**
+ * Donne l'index de la machine grace à une adressse mac.
+ * 
+ * Donne INVALID_INDEX si une erreur est arrivé ou le mac est invalide. 
+ */
+size_t net_graph_find_index_from_mac(struct net_graph* graphe, struct mac mac)
+{
+    if(!graphe)
+    {
+        DEBUG_WARNING(ERROR_BAD_ALLOC);
+        return INVALID_INDEX;
+    }
+
+    for(size_t i = 0; i < graphe->nb_devices; ++i)
+    {
+        if(graphe->nodes[i].device_type == STATION)
+        {
+            if(mac_equals(graphe->nodes[i].device.d_station.mac, mac))
+            {
+                return i;
+            }
+        }
+        else if(graphe->nodes[i].device_type == SWITCH)
+        {
+            if(mac_equals(graphe->nodes[i].device.d_switch._mac, mac))
+            {
+                return i;
+            }
+        }
+        else
+        {
+            DEBUG_WARNING(ERROR_UNREACHABLE_STATE);
+            return INVALID_INDEX;
+        }
+    }
+
+    return INVALID_INDEX;
+}
+
+/**
  * Trouve une machine avec une adresse spécifique.
  */
-struct optional_device neighbourhood_get_device_from_mac(struct net_graph* graph, struct mac mac)
+struct optional_device net_graph_get_device_from_mac(struct net_graph* graph, struct mac mac)
 {
     union device* device = NULL;
     enum DEVICE_TYPE type = NONE;
@@ -417,6 +468,98 @@ struct optional_device neighbourhood_get_device_from_mac(struct net_graph* graph
         .device = device, 
         .type = type, 
         .exit_code = ex_code};
+}
+
+/**
+ * Retourne le port dans lequel le message est venu.
+ * 
+ * Retourne INVALID_PORT si les deux machines ne sont pas connectés.
+ */
+struct optional_port net_graph_get_received_port_from_macs(struct net_graph* graph, struct mac dest, struct mac src)
+{
+    for(size_t i = 0; i < graph->nb_devices; ++i)
+    {
+        struct net_node* current = &graph->nodes[i];
+        
+        // Cheque si les memes machines
+        if(current->device_type == SWITCH)
+        {
+            if(!mac_equals(current->device.d_switch._mac, dest))
+                continue;
+        }
+        else if(current->device_type == STATION)
+        {
+            if(!mac_equals(current->device.d_station.mac, dest))
+                continue;
+        }
+        else
+        {
+            DEBUG_WARNING(ERROR_UNREACHABLE_STATE);
+            return (struct optional_port){.port = INVALID_PORT, .exit_code = ERROR_UNREACHABLE_STATE};
+        }
+        
+        // Trouve la destination
+        for(size_t j = 0; j < current->nb_connected_nodes; ++j)
+        {
+            struct net_node* connected = current->d_connections[j].connected_node;
+            
+            if(connected->device_type == SWITCH)
+            {
+                if(mac_equals(connected->device.d_switch._mac, src))
+                {
+                    return (struct optional_port){.port = (port_t)j, .exit_code = SUCESS};
+                }
+            }
+            else if(connected->device_type == STATION)
+            {
+                if(mac_equals(connected->device.d_station.mac, src))
+                {
+                    return (struct optional_port){.port = (port_t)j, .exit_code = SUCESS};
+                }
+            }
+        }
+        
+        // Destination trouvé mais pas la source 
+        DEBUG_WARNING(WARNING_NO_PORT_ROUTE);
+        return (struct optional_port){.port = INVALID_PORT, .exit_code = WARNING_NO_PORT_ROUTE};
+    }
+    
+    // Destination non trouvé.
+    DEBUG_WARNING(ERROR_UNREACHABLE_STATE);
+    return (struct optional_port){.port = INVALID_PORT, .exit_code = ERROR_UNREACHABLE_STATE};
+}
+
+/**
+ * Envoie COST_MAX si les deux index ne sont pas connecté, si ils sont les meme ou une erreur c'est passé.
+ */
+cost_t net_graph_get_cost_from_two_indexes(struct net_graph* graph, size_t index1, size_t index2)
+{
+    if(index1 == index2)
+    {
+        DEBUG_WARNING(ERROR_SAME_ITEM_PARAMETER);
+        return COST_MAX;
+    }
+
+    if(!graph || !graph->nodes)
+    {
+        DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
+        return COST_MAX;
+    }
+
+    const struct net_node* searching_node = graph->nodes+index1;
+    const struct net_node* searched_node  = graph->nodes+index2;
+
+    for(size_t i = 0; i < searching_node->nb_connected_nodes; ++i)
+    {
+        if( searching_node->d_connections[i].connected_node == searched_node )
+        {
+            return searching_node->d_connections[i].cost;
+        }
+    }
+
+    fprintf(stderr, "Couldn't find cost between %zu and %zu\n", index1, index2);
+
+    return COST_MAX;
 }
 
 /**

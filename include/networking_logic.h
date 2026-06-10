@@ -11,6 +11,11 @@
 enum EXIT_CODES network_display(struct net_graph* graph);
 
 /**
- * Commence l'envoie d'un paquet.
+ * L'utilisateur envoie un paquet avec cette fonction.
  */
-void start_sending_packet(struct net_graph* graph, struct neighbourhood* container, size_t src_idx, size_t dest_idx, char* data, size_t data_size, cost_t cost);
+void user_queues_packet(struct net_graph* graph, struct neighbourhood* container, size_t src_idx, size_t dest_idx, const char* data, size_t data_size, cost_t cost);
+
+/**
+ * gere les ticks.
+ */
+void network_handle_tick(struct net_graph* graph, struct neighbourhood* container);

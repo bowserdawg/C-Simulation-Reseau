@@ -11,6 +11,8 @@
 // Le cout d'un lien.
 typedef uint32_t cost_t;
 
+#define COST_MAX UINT32_MAX
+
 // Pratique, permet de simuler du polymorphisme en C.
 union device {
     struct device_station d_station;
@@ -106,17 +108,38 @@ struct optional_bool net_graph_devices_are_connected(const struct net_graph* gra
 struct optional_device net_graph_get_machine(const struct net_graph* graph, size_t index);
 
 /**
- * Rare fonction qui renvoit un pointeur nulle. 
+ * Donne l'index de tous les machines adjacents.
+ * Retourne le nombre de port connecte.
  * 
- * Le pointeur donne doit etre free aprés
+ * Donne INVALID_INDEX si une erreur est arrivé. 
+ * 
+ * Le pointeur donne doit etre free aprés.
  */
-size_t net_graph_surrounding_indexes(struct net_graph* graphe, size_t** indexes, size_t index);
+port_t net_graph_surrounding_indexes(struct net_graph* graphe, size_t** indexes, size_t index);
 
 /**
  * Trouve une machine avec une adresse spécifique.
  */
-struct optional_device neighbourhood_get_device_from_mac(struct net_graph* graph, struct mac mac);
+struct optional_device net_graph_get_device_from_mac(struct net_graph* graph, struct mac mac);
 
+/**
+ * Retourne le port dans lequel 
+ * 
+ * Retourne INVALID_PORT si les deux machines ne sont pas connectés.
+ */
+struct optional_port net_graph_get_received_port_from_macs(struct net_graph* graph, struct mac dest, struct mac src);
+
+/**
+ * Donne l'index de la machine grace à une adressse mac.
+ * 
+ * Donne INVALID_INDEX si une erreur est arrivé ou le mac est invalide. 
+ */
+size_t net_graph_find_index_from_mac(struct net_graph* graphe, struct mac mac);
+
+/**
+ * Envoie COST_MAX si les deux index ne sont pas connecté, si ils sont les meme ou une erreur c'est passé.
+ */
+cost_t net_graph_get_cost_from_two_indexes(struct net_graph* graph, size_t index1, size_t index2);
 
 /**
  * Detruit le graphe du réseau.

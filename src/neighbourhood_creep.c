@@ -73,6 +73,9 @@ static enum EXIT_CODES creep_push(struct creep* creep, size_t value)
 
 struct house {
     struct trame trames;
+    size_t time_remaining;
+    size_t dest_idx;      // Index dans net_graph
+    size_t src_idx;       // Index dans net_graph
     bool is_present;
 };
 
@@ -132,7 +135,8 @@ struct neighbourhood_ptr_optional init_neighbourhood(size_t capacity)
  * Fonction d'aide qui ajoute une trame à la fin du tableau houses.
  * Redimensionne houses ET creep si nécessaire.
  */
-static enum EXIT_CODES push_trame(struct neighbourhood* neighbourhood, struct trame* trame)
+static enum EXIT_CODES push_trame(struct neighbourhood* neighbourhood, 
+    struct trame* trame, size_t remaining_time, size_t dest_idx, size_t src_idx)
 {
     if (!neighbourhood || !neighbourhood->houses || !neighbourhood->creep.indexes)
     {
@@ -171,7 +175,13 @@ static enum EXIT_CODES push_trame(struct neighbourhood* neighbourhood, struct tr
         neighbourhood->cap = new_cap;
     }
 
-    neighbourhood->houses[neighbourhood->len] = (struct house){ *trame, true };
+    neighbourhood->houses[neighbourhood->len] = (struct house){ 
+        .trames = *trame, 
+        .dest_idx = dest_idx,
+        .src_idx = src_idx,
+        .time_remaining = remaining_time,
+        .is_present = true 
+    };
     neighbourhood->len++;
 
     return SUCESS;
@@ -187,7 +197,8 @@ static enum EXIT_CODES push_trame(struct neighbourhood* neighbourhood, struct tr
  *
  * Retourne : Un code de sortie indiquant si l'opération s'est bien aboutie.
  */
-enum EXIT_CODES neighbourhood_push_trame(struct neighbourhood* neighbourhood, struct trame *trame)
+enum EXIT_CODES neighbourhood_push_trame(struct neighbourhood* neighbourhood, 
+    struct trame *trame, size_t remaining_time, size_t dest_idx, size_t src_idx)
 {
     if (!neighbourhood || !neighbourhood->houses || !neighbourhood->creep.indexes)
     {
@@ -198,7 +209,7 @@ enum EXIT_CODES neighbourhood_push_trame(struct neighbourhood* neighbourhood, st
     if (neighbourhood->creep.len == 0)
     {
         // Pas de slot libre : on agrandit le tableau
-        enum EXIT_CODES ex_code = push_trame(neighbourhood, trame);
+        enum EXIT_CODES ex_code = push_trame(neighbourhood, trame, remaining_time, dest_idx, src_idx);
         if (ex_code != SUCESS)
         {
             DEBUG_WARNING(ex_code);
@@ -209,7 +220,13 @@ enum EXIT_CODES neighbourhood_push_trame(struct neighbourhood* neighbourhood, st
     {
         // Réutilisation d'un slot libre
         size_t free_idx = creep_pop(&neighbourhood->creep);
-        neighbourhood->houses[free_idx] = (struct house){ .trames = *trame, .is_present = true };
+        neighbourhood->houses[free_idx] = (struct house){ 
+            .trames = *trame, 
+            .dest_idx = dest_idx,
+            .src_idx = src_idx,
+            .time_remaining = remaining_time,
+            .is_present = true 
+        };
     }
 
 
@@ -273,16 +290,17 @@ struct optional_tram neighbourhood_get_trame(struct neighbourhood* neighbourhood
     }
     if (index >= neighbourhood->len)
     {
+        fprintf(stderr, "idx : %zu >= len : %zu", index, neighbourhood->len);
         DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
         return (struct optional_tram){.tr = {.trame = NULL,.size = 0}, .exit_code = ERROR_INDEX_OUT_OF_RANGE};
     }
     if (!neighbourhood->houses[index].is_present)
     {
         DEBUG_WARNING(WARNING_ITEM_NOT_FOUND);
-        return (struct optional_tram){.tr = {.trame = NULL,.size = 0}, .exit_code = ERROR_INDEX_OUT_OF_RANGE};
+        return (struct optional_tram){.tr = {.trame = NULL,.size = 0}, .exit_code = WARNING_ITEM_NOT_FOUND};
     }
 
-    return (struct optional_tram){.tr = neighbourhood->houses[index].trames, .exit_code = ERROR_INDEX_OUT_OF_RANGE};
+    return (struct optional_tram){.tr = neighbourhood->houses[index].trames, .exit_code = SUCESS};
 }
 
 /**
@@ -302,6 +320,109 @@ bool neighbourhood_is_present(struct neighbourhood* neighbourhood, size_t index)
 
     return neighbourhood->houses[index].is_present;
 }
+
+/**
+ * Le temps qu'il reste pour une case donné.
+ * 
+ * Renvoie INVALID_TIME en cas d'erreur.
+ */
+size_t neighbourhood_get_remaining_time(struct neighbourhood* neighbourhood, size_t index)
+{
+    if(!neighbourhood || !neighbourhood->houses)
+    {
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        return INVALID_TIME;
+    }
+    if(index >= neighbourhood->len)
+    {
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        return INVALID_TIME;
+    }
+
+    if(neighbourhood->houses[index].is_present)
+    {
+        return neighbourhood->houses[index].time_remaining;
+    }
+    return INVALID_TIME;
+}
+
+/**
+ * La source du message dans le noeud.
+ * 
+ * Renvoie INVALID_INDEX en cas d'erreur.
+ */
+size_t neighbourhood_get_src(struct neighbourhood* neighbourhood, size_t index)
+{
+    if(!neighbourhood || !neighbourhood->houses)
+    {
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        return INVALID_INDEX;
+    }
+    if(index >= neighbourhood->len)
+    {
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        return INVALID_INDEX;
+    }
+
+    if(neighbourhood->houses[index].is_present)
+    {
+        return neighbourhood->houses[index].src_idx;
+    }
+    return INVALID_INDEX;
+}
+
+/**
+ * La destination du message dans le noeud.
+ * 
+ * Renvoie INVALID_INDEX en cas d'erreur.
+ */
+size_t neighbourhood_get_dest(struct neighbourhood* neighbourhood, size_t index)
+{
+    if(!neighbourhood || !neighbourhood->houses)
+    {
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        return INVALID_INDEX;
+    }
+    if(index >= neighbourhood->len)
+    {
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        return INVALID_INDEX;
+    }
+
+    if(neighbourhood->houses[index].is_present)
+    {
+        return neighbourhood->houses[index].dest_idx;
+    }
+    return INVALID_INDEX;
+}
+
+
+
+/**
+ * Fait baisser le temps qu'il reste pour un paquet pour arriver à destination.
+ * 
+ * Retourne INVALID_TIME s'il y'a une erreur.
+ */
+struct optional_tick neighbourhood_decrease_time(struct neighbourhood* neighbourhood, size_t index)
+{
+    if (!neighbourhood || !neighbourhood->houses || !neighbourhood->creep.indexes)
+    {
+        DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
+        return (struct optional_tick){ .time = INVALID_TIME, .exit_code = ERROR_NULL_POINTER_PARAM};
+    }
+    if (index >= neighbourhood->len)
+    {
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        return (struct optional_tick){ .time = INVALID_TIME, .exit_code = ERROR_INDEX_OUT_OF_RANGE};
+    }
+    --neighbourhood->houses[index].time_remaining;
+
+    return (struct optional_tick){
+        .time = neighbourhood->houses[index].time_remaining,
+        .exit_code = SUCESS
+    };
+}
+
 
 /**
  * Détruit le quartier.

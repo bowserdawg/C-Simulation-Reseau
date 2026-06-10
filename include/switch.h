@@ -6,12 +6,19 @@
 
 #include <stdlib.h>
 
+enum SWITCH_PORT_STATUS {
+    ROOT,
+    DESIGNATED,
+    BLOCKED,
+    INVALID_SWITCH
+};
 
 struct device_switch {
     struct table_commutation table_commutation;
     struct mac _mac;
     port_t _nbPort;
-    port_t nb_port_utilise;
+    size_t nb_port_utilise; 
+    enum SWITCH_PORT_STATUS* port_status;
     priority_t priority;
 };  
 
@@ -57,6 +64,23 @@ enum EXIT_CODES switch_add_table(struct device_switch* swtch, port_t port, struc
  *            un code d'erreur indiquant si quelque chose de mal c'est passé.
  */
 struct optional_port switch_look_table(struct device_switch* swtch, struct mac mac);
+
+
+/**
+ * Donne le status d'un port.
+ * 
+ * Renvoie INVALID_SWITCH si le port n'existe pas ou le switch est invalid
+ */
+enum SWITCH_PORT_STATUS switch_get_port_status(struct device_switch* swtch, size_t index);
+
+
+/**
+ * Change le status d'un port.
+ * 
+ * Renvoie false si le status n'existe pas ou le switch est invalid.
+ */
+bool switch_change_port_status(struct device_switch* swtch, size_t index, enum SWITCH_PORT_STATUS status);
+
 
 /*
 * Attention : ne met pas l'adresse mac à 0.

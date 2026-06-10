@@ -18,6 +18,15 @@ struct optional_device_switch init_switch(struct mac mac, port_t nb_port, priori
         ex_code = table.exit_code;
     }
 
+    // Tous les ports sont root au debut
+    enum SWITCH_PORT_STATUS* port_status = calloc(nb_port, sizeof(enum SWITCH_PORT_STATUS));
+    if(!port_status)
+    {
+        deinit_table_commutation(&table.table);
+        DEBUG_WARNING(table.exit_code);
+        ex_code = ERROR_BAD_ALLOC;
+    }
+
     return (struct optional_device_switch)
                 {
                     .dev_switch = (struct device_switch)
@@ -26,6 +35,7 @@ struct optional_device_switch init_switch(struct mac mac, port_t nb_port, priori
                         ._mac     = mac, 
                         ._nbPort  = nb_port,
                         .nb_port_utilise = 0,
+                        .port_status = port_status,
                         .priority = priority
                     }, 
 
@@ -33,7 +43,7 @@ struct optional_device_switch init_switch(struct mac mac, port_t nb_port, priori
                 };
 }
 
-// Les switchs sont passés par adresse car ils sont assez gros (32 octets)
+// Les switchs sont passés par adresse car ils sont assez gros (environ 50 octets)
 
 
 /**
@@ -82,12 +92,64 @@ struct optional_port switch_look_table(struct device_switch* swtch, struct mac m
     return (struct optional_port){port.port, SUCESS};
 }
 
+/**
+ * Donne le status d'un port.
+ * 
+ * Renvoie INVALID_SWITCH si le port n'existe pas ou le switch est invalid
+ */
+enum SWITCH_PORT_STATUS switch_get_port_status(struct device_switch* swtch, size_t index)
+{
+    if(swtch == NULL || swtch->port_status == NULL)
+    {
+        DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
+        return INVALID_SWITCH;
+    }
+    
+    if(index >= swtch->_nbPort)
+    {
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        return INVALID_SWITCH;
+    }
+    
+    return swtch->port_status[index];
+}
+
+/**
+ * Change le status d'un port.
+ * 
+ * Renvoie false si le status n'existe pas ou le switch est invalid.
+ */
+bool switch_change_port_status(struct device_switch* swtch, size_t index, enum SWITCH_PORT_STATUS status)
+{
+    if(swtch == NULL || swtch->port_status == NULL)
+    {
+        DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
+        return false;
+    }
+    
+    if(index >= swtch->_nbPort)
+    {
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        return false;
+    }
+    
+    swtch->port_status[index] = status;
+    return true;
+}
+
+
+
 /*
 * Attention : ne met pas l'adresse mac à 0, mais la priorité oui.
 */
 void deinit_switch(struct device_switch* swtch)
 {
+    if(!swtch) DEBUG_WARNING(WARNING_ITEM_NULL_FREEING);
+    if(!swtch) DEBUG_WARNING(WARNING_ITEM_NULL_FREEING);
+    if(!swtch->port_status) DEBUG_WARNING(WARNING_ITEM_NULL_FREEING);
+
     deinit_table_commutation(&swtch->table_commutation);
+    free(swtch->port_status);
     swtch->table_commutation.data = NULL;
     swtch->priority = 0;
 }

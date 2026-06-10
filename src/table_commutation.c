@@ -18,7 +18,8 @@ struct optional_table_commutation init_table_commutation(size_t initial_size)
 {
     struct table_commutation new_table;
 
-    new_table.data = malloc(sizeof(struct table_entry) * initial_size);
+    // Calloc car valgrind n'aime pas quand on accéde à des champs non initalisé.
+    new_table.data = calloc(initial_size, sizeof(struct table_entry));
     if(!new_table.data)
     {
         DEBUG_WARNING(ERROR_BAD_ALLOC);

@@ -183,7 +183,7 @@ static void c_send(struct net_graph* graph, struct neighbourhood* nei)
 
 
     size_t size = strlen(fourth);
-    start_sending_packet(graph, nei, idx1, idx2, fourth, size, 20);
+    user_queues_packet(graph, nei, idx1, idx2, fourth, size, 20);
 }
 
 /****Fonctions d'aides****/
@@ -302,7 +302,7 @@ enum EXIT_CODES user_loop(struct net_graph graph, struct neighbourhood * neighbo
             }
         }
 
-
+        network_handle_tick(&graph, neighbourhood);
         increase_tick();
     }
 

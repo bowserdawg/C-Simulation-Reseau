@@ -39,6 +39,11 @@ struct optional_tram init_trame(size_t data_size, const void *data,
                         protocol_t protocol);
 
 /**
+ * Retoune une copie profonde d'une trame existante.
+ */
+struct optional_tram trame_copy(const struct trame src);
+
+/**
  * trame_get_destination                                                     
  *  Retourne l'adresse MAC de destination
  */

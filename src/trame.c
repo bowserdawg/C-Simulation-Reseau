@@ -157,6 +157,26 @@ struct optional_tram init_trame(size_t data_size, const void *data,
     return (struct optional_tram){.tr = tr, .exit_code = SUCESS};
 }
 
+/**
+ * Retoune une copie profonde d'une trame existante.
+ */
+struct optional_tram trame_copy(const struct trame src)
+{
+    struct trame copy = { .trame = NULL, .size = 0 };
+
+    if (!src.trame || src.size == 0)
+        return (struct optional_tram) { .tr = copy, .exit_code = ERROR_NULL_POINTER_PARAM};
+
+    copy.trame = malloc(src.size);
+    if (!copy.trame)
+        return (struct optional_tram) { .tr = copy, .exit_code = ERROR_BAD_ALLOC};
+
+    memcpy(copy.trame, src.trame, src.size);
+    copy.size = src.size;
+
+    return (struct optional_tram) { .tr = copy, .exit_code = SUCESS};
+}
+
 /**   
 *    Utilitaire interne : pointeur vers l'en-tête                      
 */

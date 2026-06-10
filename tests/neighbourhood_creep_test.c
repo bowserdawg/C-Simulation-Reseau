@@ -32,8 +32,8 @@ void test_neighbourhood_creep()
     struct trame myTrame2 = myTrame2_op.tr;
 
 
-    neighbourhood_push_trame(nei, &myTrame);  // 0
-    neighbourhood_push_trame(nei, &myTrame2);
+    neighbourhood_push_trame(nei, &myTrame, 10, 10, 10);  // 0
+    neighbourhood_push_trame(nei, &myTrame2, 10 , 10, 10);
 
     DEBUG_ASSERT_W_MESSAGE(neighbourhood_get_len(nei) == 2, "FAIL wrong neighbourhood length\n");
 
@@ -45,7 +45,7 @@ void test_neighbourhood_creep()
     struct optional_tram myTrame3_op = init_trame(sizeof(DATA), DATA, mac1, mac2, 0x0800);
     struct trame myTrame3 = myTrame3_op.tr;
 
-    neighbourhood_push_trame(nei, &myTrame3);
+    neighbourhood_push_trame(nei, &myTrame3, 10, 10, 10);
 
     DEBUG_ASSERT_W_MESSAGE(neighbourhood_get_len(nei) == 2, "FAIL len shouldn't have changed\n");
     DEBUG_ASSERT_W_MESSAGE(neighbourhood_is_present(nei, 0) == true, "FAIL should be present because popped but added back\n");

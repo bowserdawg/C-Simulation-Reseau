@@ -84,7 +84,11 @@ enum EXIT_CODES network_display(struct net_graph* graph)
         fprintf(stderr, "Indexe(s) of the device(s) connected to device %zu [ ", i);
         size_t* ptr = NULL;
         size_t num = net_graph_surrounding_indexes(graph, &ptr,  i);
-        if(num == INVALID_INDEX) return ERROR_BAD_ALLOC;
+        if(num == INVALID_INDEX)
+        {
+            DEBUG_WARNING(ERROR_BAD_ALLOC);
+            return ERROR_BAD_ALLOC;
+        } 
         for(size_t j = 0; j < num; ++j)
         {
             fprintf(stderr, "%zu ", ptr[j]);
@@ -103,7 +107,7 @@ static struct optional_mac get_mac_from_device(union device* device, enum DEVICE
 {
     if(!device)
     {
-        return (struct optional_mac){ .mac = device->d_station.mac, .exit_code = ERROR_NULL_POINTER_PARAM};
+        return (struct optional_mac){ .mac = {{0}}, .exit_code = ERROR_NULL_POINTER_PARAM};
     }
 
     if(type == STATION)
@@ -117,19 +121,71 @@ static struct optional_mac get_mac_from_device(union device* device, enum DEVICE
     return (struct optional_mac){ .mac = {{0}}, .exit_code = WARNING_ITEM_NOT_FOUND};
 }
 
-/**
- * Commence l'envoie d'un paquet.
- */
-void start_sending_packet(struct net_graph* graph, struct neighbourhood* container, size_t src_idx, size_t dest_idx, char* data, size_t data_size, cost_t cost)
+// p_idx == physical, c'est le lien entre les machines
+static void queue_packet(struct net_graph* graph, struct neighbourhood* container,
+    struct mac dest_mac, struct mac src_mac, size_t p_dest_idx,
+    size_t p_src_idx, cost_t cost, const char* data, size_t data_size)
 {
-    if(graph->nb_devices < src_idx || graph->nb_devices < dest_idx)
+    // init_trame fait une copie du data
+    struct optional_tram tram_op = init_trame(data_size, data, dest_mac, src_mac, DEFAULT_PROT);
+    if(tram_op.exit_code != SUCESS)
     {
-        // Pas vraiment trés grave.
-        DEBUG_WARNING(ERROR_INVALID_TERMINAL_ARGS);
-        fprintf(stderr, "Error: choosen indexes must be bewteen 0 and %zu", graph->nb_devices -1);
+        DEBUG_WARNING(tram_op.exit_code);
         return;
     }
 
+    // Ajouter dans le container.
+    enum EXIT_CODES ex_code = neighbourhood_push_trame(container, &tram_op.tr, cost, p_dest_idx, p_src_idx);
+    
+    if(ex_code == SUCESS)
+    {
+        char* mac_dst = NULL;
+        if(mac_to_string(&mac_dst, dest_mac) != SUCESS)
+        {
+            return;
+        }
+        char* mac_src = NULL;
+        if(mac_to_string(&mac_src, dest_mac) != SUCESS)
+        {
+            free(mac_dst);
+            return;
+        }
+        fprintf(stderr, 
+            "Queued packet successfully : \n Ethernet(dest:%s, src:%s) \n Physical(from dev%zu to dev%zu) \n\n",
+                mac_dst,
+                mac_src,
+                p_src_idx,
+                p_dest_idx
+            );
+
+        free(mac_dst);
+        mac_dst = NULL;
+        free(mac_src);
+        mac_src = NULL;
+    }
+    else
+    {
+        deinit_trame(&tram_op.tr);
+        DEBUG_WARNING(ex_code);
+        fprintf(stderr, "Queue packet ERROR\n");
+    }
+}
+
+/**
+ * L'utilisateur envoie un paquet avec cette fonction.
+ */
+void user_queues_packet(struct net_graph* graph, struct neighbourhood* container, size_t src_idx, size_t dest_idx, const char* data, size_t data_size, cost_t cost)
+{
+    // Check si l'index de machine est correcte
+    if(graph->nb_devices <= src_idx || graph->nb_devices <= dest_idx)
+    {
+        // Pas vraiment trés grave.
+        DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
+        fprintf(stderr, "Error: choosen indexes must be bewteen 0 and %zu", graph->nb_devices - 1);
+        return;
+    }
+
+    // get les device
     struct optional_device src_dev = net_graph_get_machine(graph, src_idx);
     if(src_dev.exit_code != SUCESS)
     {
@@ -143,6 +199,7 @@ void start_sending_packet(struct net_graph* graph, struct neighbourhood* contain
         return;
     }
 
+    // get les mac
     struct optional_mac src_mac = get_mac_from_device(src_dev.device, src_dev.type);
     if(src_mac.exit_code != SUCESS) 
     {
@@ -155,16 +212,142 @@ void start_sending_packet(struct net_graph* graph, struct neighbourhood* contain
         DEBUG_WARNING(dest_mac.exit_code);
         return;
     }
+    
 
-    struct optional_tram tram_op = init_trame(data_size, data, dest_mac.mac, src_mac.mac, DEFAULT_PROT);
-    if(tram_op.exit_code != SUCESS)
+    size_t* indexes;
+    size_t nb_indexes = net_graph_surrounding_indexes(graph, &indexes, src_idx);
+    if(nb_indexes == INVALID_INDEX)
     {
-        DEBUG_WARNING(tram_op.exit_code);
+        DEBUG_WARNING(ERROR_UNREACHABLE_STATE);
+        fprintf(stderr, "Fetching indexes failed\n");
+        free(indexes);
         return;
     }
 
-    // Ajouter dans le container.
-    enum EXIT_CODES ex_code = neighbourhood_push_trame(container, &tram_op.tr);
+    for(size_t i = 0; i < nb_indexes; ++i)
+    {
+        queue_packet(graph, container, dest_mac.mac, src_mac.mac, indexes[i] , src_idx, cost, data, data_size);
+    }
 
-    fprintf(stderr, "Success\n");
+    free(indexes);
+}
+
+
+/**
+ * gere les ticks.
+ */
+void network_handle_tick(struct net_graph* graph, struct neighbourhood* container)
+{
+    const size_t len = neighbourhood_get_len(container);
+
+    for(size_t i = 0; i < len; ++i)
+    {
+        if(neighbourhood_is_present(container, i))
+        {
+            struct optional_tick time = neighbourhood_decrease_time(container, i);
+            if(time.exit_code != SUCESS)
+            {
+                DEBUG_WARNING(time.exit_code);
+                continue;
+            }
+            // Le temps restant est 0, il faut changer le paquet !
+            if(!time.time)
+            {
+                struct optional_tram tram_op = neighbourhood_get_trame(container, i);
+                if(tram_op.exit_code != SUCESS)
+                {
+                    DEBUG_WARNING(tram_op.exit_code);
+                    continue;
+                }
+
+                struct mac mac_dest = trame_get_destination(tram_op.tr);
+                struct mac mac_source = trame_get_source(tram_op.tr);
+
+                struct optional_device dev = net_graph_get_device_from_mac(graph, mac_source);
+                if(dev.exit_code != SUCESS)
+                {
+                    DEBUG_WARNING(dev.exit_code);
+                    continue;
+                }
+
+                // Si la machine source destination est une station, c'est fini, le payload est arrivé à la maison.
+                // On met un body quand meme si on veut rajouter des features dans le future.
+                if(dev.type == STATION)
+                {
+                    
+                }
+                // Sinon, le switch se gère de router le paquet.
+                else if(dev.type == SWITCH)
+                {
+                    // Destinations physiques et non mac
+                    size_t dest_new_src = neighbourhood_get_dest(container, i);
+                    size_t sender       = neighbourhood_get_src(container, i);
+                    size_t* indexes;
+                    size_t nb_indexes = net_graph_surrounding_indexes(graph, &indexes, dest_new_src);
+                    port_t sent_port_index = INVALID_PORT;
+                    for(port_t j = 0; j < nb_indexes; ++j)
+                    {
+                        if(indexes[j] == sender)
+                        {
+                            sent_port_index = j;
+                        }
+                    }
+                    
+                    // Maintenant, ajouter dans la table du switch le MAC source et le port associé.
+                    table_commutation_add(&dev.device->d_switch.table_commutation, sent_port_index, mac_source);
+
+                    // Voir si la destination est dans la table.
+                    struct optional_port port_op = table_commutation_lookup(dev.device->d_switch.table_commutation, mac_dest);
+                    if(port_op.exit_code != SUCESS)
+                    {
+                        DEBUG_WARNING(port_op.exit_code);
+                        free(indexes);
+                        continue;
+                    }
+
+                    // Si oui, envoyer le paquet vers la machine.
+                    const void* data;
+                    // Pas de gestion d'erreur, peut faire un gros segfault car le struct trame est trés dangeureux.
+                    size_t copy_data_size = trame_get_data(tram_op.tr, &data);
+
+                    if(port_op.port != INVALID_INDEX)
+                    {
+                        //fprintf(stderr, "Stop here %lu\n", ports);
+                        cost_t new_cost  =     net_graph_get_cost_from_two_indexes(graph, dest_new_src, sender);
+                        fprintf(stderr, "copy cost : %u \n", new_cost);
+                        if(new_cost == COST_MAX)
+                        {
+                            fprintf(stderr, "Couldn't find the copy cost\n");
+                            free(indexes);
+                            continue;
+                        }
+
+                        // "la destination est la nouvelle source"
+                        // Crée une nouvelle trame, le data va etre copier
+                        queue_packet(graph, container, mac_dest, mac_source, port_op.port, dest_new_src, new_cost, data, copy_data_size);
+                    }
+                    // Sinon, on flood
+                    else
+                    {
+                        for(size_t j = 0; j < nb_indexes; ++j)
+                        {
+                            enum SWITCH_PORT_STATUS port_status = switch_get_port_status(&dev.device->d_switch, j);
+                            // Envoie un paquet à chaque port non bloqué
+                            if((port_status == ROOT) || (port_status == DESIGNATED) || (j != sender))
+                            {
+                                cost_t copy_cost  =     net_graph_get_cost_from_two_indexes(graph, dest_new_src, indexes[j]);
+                                fprintf(stderr, "copy cost : %u \n", copy_cost);
+                                queue_packet(graph, container, mac_dest, mac_source, indexes[j], dest_new_src, copy_cost, data, copy_data_size);
+                            }
+                        }
+                    }
+
+                    free(indexes);
+                }
+                // Deinit l'acien tram pour de bon, AVEC UN POP ET NON UN DEINIT TRAME
+                neighbourhood_pop_trame(container, i);
+            }  
+        }
+
+    }
 }
