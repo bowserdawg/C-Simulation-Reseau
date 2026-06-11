@@ -36,6 +36,7 @@ void display_trames(struct neighbourhood* container)
                 return;
             }
 
+
             char* colored;
             enum EXIT_CODES ex = trame_to_hex_ansi(tram_op.tr, &colored);
             if(ex != SUCCESS)
@@ -44,7 +45,7 @@ void display_trames(struct neighbourhood* container)
                 fprintf(stderr, "Error : couldn't display trames.\n");
                 return;
             }
-            fprintf(stderr, "Trame%zu %zu \n%s\n\n", num_user,i,colored);
+            fprintf(stderr, "Trame%zu \n%s\n\n", num_user,colored);
             free(colored);
             num_user++;
         }
@@ -161,7 +162,7 @@ static struct optional_mac get_mac_from_device(union device* device, enum DEVICE
 }
 
 // p_idx == physical, c'est le lien entre les machines
-static void queue_packet(struct net_graph* graph, struct neighbourhood* container,
+static void queue_packet(struct neighbourhood* container,
     struct mac dest_mac, struct mac src_mac, size_t p_dest_idx,
     size_t p_src_idx, cost_t cost, const char* data, size_t data_size)
 {
@@ -266,10 +267,54 @@ void user_queues_packet(struct net_graph* graph, struct neighbourhood* container
 
     for(size_t i = 0; i < nb_indexes; ++i)
     {
-        queue_packet(graph, container, dest_mac.mac, src_mac.mac, indexes[i] , src_idx, cost, data, data_size);
+        queue_packet(container, dest_mac.mac, src_mac.mac, indexes[i] , src_idx, cost, data, data_size);
     }
 
     free(indexes);
+}
+
+/**
+ * Displayed when a packet arrives to another station.
+ */
+static void display_arrived(struct neighbourhood* container, struct mac mac_dest, struct mac mac_source, size_t i, enum DEVICE_TYPE type)
+{
+    size_t p_src_idx = neighbourhood_get_src(container, i);
+    size_t p_dest_idx = neighbourhood_get_dest(container, i);
+
+    char* mac_dst = NULL;
+    if(mac_to_string(&mac_dst, mac_dest) != SUCCESS)
+    {
+        return;
+    }
+    char* mac_src = NULL;
+    if(mac_to_string(&mac_src, mac_source) != SUCCESS)
+    {
+        free(mac_dst);
+        return;
+    }
+
+    if(type == STATION)
+    {
+        fprintf(stderr, 
+        "Queued packet successfully arrived at station at tick %zu : \n Ethernet(dest:%s, src:%s) \n Physical(from dev%zu to dev%zu) \n\n",
+        get_global_tick(),
+        mac_dst,
+        mac_src,
+        p_src_idx,
+        p_dest_idx);
+    }
+    else if(type == SWITCH)
+    {
+        fprintf(stderr, 
+        "Queued packet successfully arrived at switch at tick %zu  : \n Ethernet(dest:%s, src:%s) \n Physical(from dev%zu to dev%zu) \n\n",
+        get_global_tick(),
+        mac_dst,
+        mac_src,
+        p_src_idx,
+        p_dest_idx);
+    }
+    free(mac_dst);
+    free(mac_src);
 }
 
 
@@ -310,34 +355,13 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
                     continue;
                 }
 
+                display_arrived(container, mac_dest, mac_source, i, dev.type);
+
                 // Si la machine source destination est une station, c'est fini, le payload est arrivé à la maison.
                 // On met un body quand meme si on veut rajouter des features dans le future.
                 if(dev.type == STATION)
                 {
-                    size_t p_src_idx = neighbourhood_get_src(container, i);
-                    size_t p_dest_idx = neighbourhood_get_dest(container, i);
-
-                    char* mac_dst = NULL;
-                    if(mac_to_string(&mac_dst, mac_dest) != SUCCESS)
-                    {
-                        continue;
-                    }
-                    char* mac_src = NULL;
-                    if(mac_to_string(&mac_src, mac_source) != SUCCESS)
-                    {
-                        free(mac_dst);
-                        continue;
-                    }
-
-                    fprintf(stderr, 
-                    "Queued packet successfully arrived at station : \n Ethernet(dest:%s, src:%s) \n Physical(from dev%zu to dev%zu) \n\n",
-                        mac_dst,
-                        mac_src,
-                        p_src_idx,
-                        p_dest_idx
-                    );
-                    free(mac_dst);
-                    free(mac_src);
+                    
                 }
                 // Sinon, le switch se gère de router le paquet.
                 else if(dev.type == SWITCH)
@@ -387,7 +411,7 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
 
                         // "la destination est la nouvelle source"
                         // Crée une nouvelle trame, le data va etre copier
-                        queue_packet(graph, container, mac_dest, mac_source, port_op.port, dest_new_src, new_cost, data, copy_data_size);
+                        queue_packet(container, mac_dest, mac_source, port_op.port, dest_new_src, new_cost, data, copy_data_size);
                     }
                     // Sinon, on flood
                     else
@@ -400,7 +424,7 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
                             if( ((port_status == ROOT) || (port_status == DESIGNATED)) && (indexes[j] != sender))
                             {
                                 cost_t copy_cost  =     net_graph_get_cost_from_two_indexes(graph, dest_new_src, indexes[j]);
-                                queue_packet(graph, container, mac_dest, mac_source, indexes[j], dest_new_src, copy_cost, data, copy_data_size);
+                                queue_packet(container, mac_dest, mac_source, indexes[j], dest_new_src, copy_cost, data, copy_data_size);
                             }
                         }
                     }

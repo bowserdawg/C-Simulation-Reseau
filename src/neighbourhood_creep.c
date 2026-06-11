@@ -415,6 +415,10 @@ struct optional_tick neighbourhood_decrease_time(struct neighbourhood* neighbour
         DEBUG_WARNING(ERROR_INDEX_OUT_OF_RANGE);
         return (struct optional_tick){ .time = INVALID_TIME, .exit_code = ERROR_INDEX_OUT_OF_RANGE};
     }
+
+    // éviter les -1 négatives
+    if(neighbourhood->houses[index].time_remaining == 0) neighbourhood->houses[index].time_remaining = 1;
+
     --neighbourhood->houses[index].time_remaining;
 
     return (struct optional_tick){

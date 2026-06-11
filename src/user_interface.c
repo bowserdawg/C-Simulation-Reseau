@@ -132,7 +132,9 @@ const char* INSTRUCTIONS =
     "\tcontinue : Continues the program.\n"
     "\texit     : Exits the program.\n"
     "\thelp     : Show these informations.\n"
-    "\tdisplay  : Show all the nodes and devices in the network\n";
+    "\tdisplay  : Show all the nodes and devices in the network\n"
+    "\tdtrame   : Displayed information about trames with a colored legend.\n"
+    "\tsend     : Envoie un paquet vers une autre machine.\n";
 
 /* Commandes pour l'utilisateur */
 static void c_help() {fprintf(stderr, "%s", INSTRUCTIONS);}
@@ -169,8 +171,6 @@ static void c_display(struct net_graph* graph)
 }
 static void c_send(struct net_graph* graph, struct neighbourhood* nei)
 {
-    fprintf(stderr, "Hello\n");
-
     size_t idx1 = INVALID_INDEX, idx2 = INVALID_INDEX;
 
     if(sscanf(second,"%zu", &idx1) != 1)
