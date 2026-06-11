@@ -13,7 +13,7 @@ void test_neighbourhood_creep()
     const int len = 5;
 
     struct neighbourhood_ptr_optional op = init_neighbourhood(len);
-    DEBUG_ASSERT_W_MESSAGE(op.exit_code == SUCESS, "FAIL init_neighbourhood failed\n");
+    DEBUG_ASSERT_W_MESSAGE(op.exit_code == SUCCESS, "FAIL init_neighbourhood failed\n");
 
     struct neighbourhood* nei = op.n_ptr;
 
@@ -24,11 +24,11 @@ void test_neighbourhood_creep()
     DEBUG_ASSERT_W_MESSAGE(neighbourhood_get_len(nei) == 0, "FAIL wrong neighbourhood length\n");
 
     struct optional_tram myTrame_op = init_trame(sizeof(DATA), DATA, mac1, mac2, 0x0800);
-    DEBUG_ASSERT_W_MESSAGE(myTrame_op.exit_code == SUCESS,"FAIL init trame failed\n");
+    DEBUG_ASSERT_W_MESSAGE(myTrame_op.exit_code == SUCCESS,"FAIL init trame failed\n");
     struct trame myTrame = myTrame_op.tr;
 
     struct optional_tram myTrame2_op = init_trame(sizeof(DATA), DATA, mac2, mac1, 0x0800);
-    DEBUG_ASSERT_W_MESSAGE(myTrame2_op.exit_code == SUCESS,"FAIL init trame failed\n");
+    DEBUG_ASSERT_W_MESSAGE(myTrame2_op.exit_code == SUCCESS,"FAIL init trame failed\n");
     struct trame myTrame2 = myTrame2_op.tr;
 
 
@@ -39,8 +39,8 @@ void test_neighbourhood_creep()
 
 
     DEBUG_ASSERT_W_MESSAGE(neighbourhood_get_len(nei) == 2, "FAIL wrong neighbourhood length\n");
-    DEBUG_ASSERT_W_MESSAGE(neighbourhood_pop_trame(nei, 0) == SUCESS, "FAIL neighbourhood_pop_trame should have been successful\n");
-    DEBUG_ASSERT_W_MESSAGE(neighbourhood_pop_trame(nei, 2) != SUCESS, "FAIL neighbourhood_pop_trame shouldn't have been successful\n");
+    DEBUG_ASSERT_W_MESSAGE(neighbourhood_pop_trame(nei, 0) == SUCCESS, "FAIL neighbourhood_pop_trame should have been successful\n");
+    DEBUG_ASSERT_W_MESSAGE(neighbourhood_pop_trame(nei, 2) != SUCCESS, "FAIL neighbourhood_pop_trame shouldn't have been successful\n");
 
     struct optional_tram myTrame3_op = init_trame(sizeof(DATA), DATA, mac1, mac2, 0x0800);
     struct trame myTrame3 = myTrame3_op.tr;
@@ -51,7 +51,7 @@ void test_neighbourhood_creep()
     DEBUG_ASSERT_W_MESSAGE(neighbourhood_is_present(nei, 0) == true, "FAIL should be present because popped but added back\n");
 
 
-    DEBUG_ASSERT_W_MESSAGE(neighbourhood_pop_trame(nei, 1) == SUCESS, "FAIL neighbourhood_pop_trame should have been successful\n");
+    DEBUG_ASSERT_W_MESSAGE(neighbourhood_pop_trame(nei, 1) == SUCCESS, "FAIL neighbourhood_pop_trame should have been successful\n");
     DEBUG_ASSERT_W_MESSAGE(neighbourhood_is_present(nei, 1) == false, "FAIL should not be present because popped\n");
 
     DEBUG_ASSERT_W_MESSAGE(neighbourhood_is_present(nei, 2) == false, "FAIL shoudln't be present\n");

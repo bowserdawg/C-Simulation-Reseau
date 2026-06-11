@@ -29,7 +29,7 @@ struct optional_table_commutation init_table_commutation(size_t initial_size)
     new_table.size = initial_size;
     new_table.nb_elems = 0;
 
-    return (struct optional_table_commutation){ .table = new_table, .exit_code = SUCESS};
+    return (struct optional_table_commutation){ .table = new_table, .exit_code = SUCCESS};
 }
 
 /**
@@ -49,7 +49,7 @@ enum EXIT_CODES table_commutation_add(struct table_commutation* table, port_t po
                                                           .addrs  = address};
     table->nb_elems++;
 
-    return SUCESS;
+    return SUCCESS;
 }
 
 /**
@@ -69,10 +69,10 @@ struct optional_port table_commutation_lookup(struct table_commutation table, st
 
     if( mac_equals(mac, mac2) )
     {
-        return (struct optional_port){table.data[num % table.size].nbPort, SUCESS};
+        return (struct optional_port){table.data[num % table.size].nbPort, SUCCESS};
     }
 
-    return (struct optional_port){INVALID_PORT, SUCESS};
+    return (struct optional_port){INVALID_PORT, SUCCESS};
 }
 
 /**

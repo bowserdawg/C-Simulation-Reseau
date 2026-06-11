@@ -45,7 +45,7 @@ struct optional_net_graph init_net_graph(size_t devices_capacity)
     g.nb_devices = 0;
     g.cap_devices = devices_capacity;
 
-    return (struct optional_net_graph){ .graph = g, .exit_code = SUCESS };
+    return (struct optional_net_graph){ .graph = g, .exit_code = SUCCESS };
 }
 
 /************************************************************************
@@ -59,7 +59,7 @@ static enum EXIT_CODES check_null(struct net_graph* graph)
         DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
         return ERROR_NULL_POINTER_PARAM;
     }
-    return SUCESS;
+    return SUCCESS;
 }
 
 static enum EXIT_CODES check_size(struct net_graph* graph)
@@ -69,7 +69,7 @@ static enum EXIT_CODES check_size(struct net_graph* graph)
         DEBUG_WARNING(ERROR_CAPACITY_REACHED);
         return ERROR_CAPACITY_REACHED;
     }
-    return SUCESS;
+    return SUCCESS;
 }
 
 
@@ -81,7 +81,7 @@ static enum EXIT_CODES get_connections_ptr_array(struct connections** connecs, s
         DEBUG_WARNING(ERROR_BAD_ALLOC);
         return ERROR_BAD_ALLOC;
     }
-    return SUCESS;
+    return SUCCESS;
 }
 /************************************************************************
  *                                                                      *
@@ -101,16 +101,16 @@ struct optional_size net_graph_add_station(struct net_graph* graph, struct devic
 {
     // Check si le graphe est null ou non
     enum EXIT_CODES exit_code = check_null(graph);
-    if(exit_code != SUCESS) goto end;
+    if(exit_code != SUCCESS) goto end;
 
     // Check si il reste de la capaicté dans le graphe.
     exit_code = check_size(graph);
-    if(exit_code != SUCESS) goto end;
+    if(exit_code != SUCCESS) goto end;
 
     // Alloc l'emplacement pour tous les pointeurs nécessaires
     struct connections* connecs = NULL;
     exit_code = get_connections_ptr_array(&connecs, INITIAL_NUM_CONNEXIONS);
-    if(exit_code != SUCESS) goto end;
+    if(exit_code != SUCCESS) goto end;
     
     struct net_node node = 
     {
@@ -143,16 +143,16 @@ struct optional_size net_graph_add_switch(struct net_graph* graph, struct device
 {
     // Check si le graphe est null ou non
     enum EXIT_CODES exit_code = check_null(graph);
-    if(exit_code != SUCESS) goto end;
+    if(exit_code != SUCCESS) goto end;
 
     // Check si il reste de la capaicté dans le graphe.
     exit_code = check_size(graph);
-    if(exit_code != SUCESS) goto end;
+    if(exit_code != SUCCESS) goto end;
 
     // Alloc l'emplacement pour tous les pointeurs nécessaires
     struct connections* connecs = NULL;
     exit_code = get_connections_ptr_array(&connecs, INITIAL_NUM_CONNEXIONS);
-    if(exit_code != SUCESS) goto end;
+    if(exit_code != SUCCESS) goto end;
 
     struct net_node node = 
     {
@@ -199,7 +199,7 @@ static enum EXIT_CODES add_node(const struct net_graph* graph, size_t device_ind
         // Allocation d'espace.
         struct connections* connecs = NULL;
         enum EXIT_CODES ex_code = get_connections_ptr_array(&connecs, capacity*2);  // calloc
-        if(ex_code != SUCESS)
+        if(ex_code != SUCCESS)
         {
             DEBUG_WARNING(ex_code);
             return ex_code;
@@ -226,7 +226,7 @@ static enum EXIT_CODES add_node(const struct net_graph* graph, size_t device_ind
         node->device.d_switch.nb_port_utilise++;   
     }
 
-    return SUCESS;
+    return SUCCESS;
 }
 
 /**
@@ -267,9 +267,9 @@ enum EXIT_CODES net_graph_add_node(const struct net_graph* graph, size_t index1,
     enum EXIT_CODES ex_code1 = add_node(graph, index1, index2, cost);
     enum EXIT_CODES ex_code2 = add_node(graph, index2, index1, cost);
 
-    if(ex_code1 != SUCESS) return ex_code1;
-    if(ex_code2 != SUCESS) return ex_code2;
-    return SUCESS;
+    if(ex_code1 != SUCCESS) return ex_code1;
+    if(ex_code2 != SUCCESS) return ex_code2;
+    return SUCCESS;
 }
 
 /**
@@ -297,11 +297,11 @@ struct optional_bool net_graph_devices_are_connected(const struct net_graph* gra
     {
         if( searching_node->d_connections[i].connected_node == searched_node )
         {
-            return (struct optional_bool){true, SUCESS};
+            return (struct optional_bool){true, SUCCESS};
         }
     }
 
-    return (struct optional_bool){false, SUCESS};
+    return (struct optional_bool){false, SUCCESS};
 }
 
 /**
@@ -335,7 +335,7 @@ struct optional_device net_graph_get_machine(const struct net_graph* graph, size
     {
         .device    = &graph->nodes[index].device,
         .type      = graph->nodes[index].device_type,
-        .exit_code = SUCESS
+        .exit_code = SUCCESS
     };
 }
 
@@ -432,7 +432,7 @@ struct optional_device net_graph_get_device_from_mac(struct net_graph* graph, st
 {
     union device* device = NULL;
     enum DEVICE_TYPE type = NONE;
-    enum EXIT_CODES ex_code = SUCESS;
+    enum EXIT_CODES ex_code = SUCCESS;
 
     if(!graph || !graph->nodes)
     {
@@ -507,14 +507,14 @@ struct optional_port net_graph_get_received_port_from_macs(struct net_graph* gra
             {
                 if(mac_equals(connected->device.d_switch._mac, src))
                 {
-                    return (struct optional_port){.port = (port_t)j, .exit_code = SUCESS};
+                    return (struct optional_port){.port = (port_t)j, .exit_code = SUCCESS};
                 }
             }
             else if(connected->device_type == STATION)
             {
                 if(mac_equals(connected->device.d_station.mac, src))
                 {
-                    return (struct optional_port){.port = (port_t)j, .exit_code = SUCESS};
+                    return (struct optional_port){.port = (port_t)j, .exit_code = SUCCESS};
                 }
             }
         }

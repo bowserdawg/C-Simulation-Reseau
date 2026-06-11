@@ -33,7 +33,7 @@ const char* DATA = "Hello World";
 
 int main(int argc, char *argv[]) 
 {
-    enum EXIT_CODES exit_code = SUCESS;
+    enum EXIT_CODES exit_code = SUCCESS;
     struct net_graph graph = {NULL, 0, 0};
     
     struct neighbourhood* neighbourhood;
@@ -52,11 +52,11 @@ int main(int argc, char *argv[])
 
         exit_code = parse_config(filepath, &graph);
 
-        if(exit_code == SUCESS)
+        if(exit_code == SUCCESS)
         {
             struct neighbourhood_ptr_optional nei_op = init_neighbourhood(graph.nb_devices);
             exit_code = nei_op.exit_code;
-            if(exit_code == SUCESS)
+            if(exit_code == SUCCESS)
             {
                 neighbourhood = nei_op.n_ptr;
 
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                DEBUG_WARNING(SUCESS);
+                DEBUG_WARNING(SUCCESS);
                 fprintf(stderr, "%s: Error initialising network\n", G_APP_NAME);
             }
         }
@@ -81,5 +81,5 @@ int main(int argc, char *argv[])
     deinit_graph(&graph);
     
 
-    return (exit_code == SUCESS) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return (exit_code == SUCCESS) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

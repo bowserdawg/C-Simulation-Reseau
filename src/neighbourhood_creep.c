@@ -35,7 +35,7 @@ static struct creep_optional creep_init(int init_cap)
     creep.cap = init_cap;
     creep.len = 0;
 
-    return (struct creep_optional){ .creep = creep, .ex_code = SUCESS };
+    return (struct creep_optional){ .creep = creep, .ex_code = SUCCESS };
 }
 
 static size_t creep_pop(struct creep* creep)
@@ -68,7 +68,7 @@ static enum EXIT_CODES creep_push(struct creep* creep, size_t value)
     creep->indexes[creep->len] = value;
     creep->len++;
 
-    return SUCESS;
+    return SUCCESS;
 }
 
 struct house {
@@ -116,7 +116,7 @@ struct neighbourhood_ptr_optional init_neighbourhood(size_t capacity)
     }
 
     struct creep_optional op_crep = creep_init(capacity);
-    if (op_crep.ex_code != SUCESS)
+    if (op_crep.ex_code != SUCCESS)
     {
         free(neighbourhood->houses);
         free(neighbourhood);
@@ -128,7 +128,7 @@ struct neighbourhood_ptr_optional init_neighbourhood(size_t capacity)
     neighbourhood->cap = capacity;
     neighbourhood->creep = op_crep.creep;
 
-    return (struct neighbourhood_ptr_optional){ .n_ptr = neighbourhood, .exit_code = SUCESS };
+    return (struct neighbourhood_ptr_optional){ .n_ptr = neighbourhood, .exit_code = SUCCESS };
 }
 
 /**
@@ -184,7 +184,7 @@ static enum EXIT_CODES push_trame(struct neighbourhood* neighbourhood,
     };
     neighbourhood->len++;
 
-    return SUCESS;
+    return SUCCESS;
 }
 
 /**
@@ -210,7 +210,7 @@ enum EXIT_CODES neighbourhood_push_trame(struct neighbourhood* neighbourhood,
     {
         // Pas de slot libre : on agrandit le tableau
         enum EXIT_CODES ex_code = push_trame(neighbourhood, trame, remaining_time, dest_idx, src_idx);
-        if (ex_code != SUCESS)
+        if (ex_code != SUCCESS)
         {
             DEBUG_WARNING(ex_code);
             return ex_code;
@@ -230,7 +230,7 @@ enum EXIT_CODES neighbourhood_push_trame(struct neighbourhood* neighbourhood,
     }
 
 
-    return SUCESS;
+    return SUCCESS;
 }
 
 /**
@@ -262,10 +262,10 @@ enum EXIT_CODES neighbourhood_pop_trame(struct neighbourhood* neighbourhood, siz
         neighbourhood->houses[index].trames.trame = NULL;
 
         enum EXIT_CODES ex = creep_push(&neighbourhood->creep, index);
-        if (ex != SUCESS) return ex;
+        if (ex != SUCCESS) return ex;
     }
 
-    return SUCESS;
+    return SUCCESS;
 }
 
 /**
@@ -300,7 +300,7 @@ struct optional_tram neighbourhood_get_trame(struct neighbourhood* neighbourhood
         return (struct optional_tram){.tr = {.trame = NULL,.size = 0}, .exit_code = WARNING_ITEM_NOT_FOUND};
     }
 
-    return (struct optional_tram){.tr = neighbourhood->houses[index].trames, .exit_code = SUCESS};
+    return (struct optional_tram){.tr = neighbourhood->houses[index].trames, .exit_code = SUCCESS};
 }
 
 /**
@@ -419,7 +419,7 @@ struct optional_tick neighbourhood_decrease_time(struct neighbourhood* neighbour
 
     return (struct optional_tick){
         .time = neighbourhood->houses[index].time_remaining,
-        .exit_code = SUCESS
+        .exit_code = SUCCESS
     };
 }
 

@@ -9,10 +9,10 @@
  */
 struct optional_device_switch init_switch(struct mac mac, port_t nb_port, priority_t priority)
 {
-    enum EXIT_CODES ex_code = SUCESS;
+    enum EXIT_CODES ex_code = SUCCESS;
 
     struct optional_table_commutation table = init_table_commutation(SWITCH_COMMUTATION_TABLE_SIZE);
-    if(table.exit_code != SUCESS)
+    if(table.exit_code != SUCCESS)
     {
         DEBUG_WARNING(table.exit_code);
         ex_code = table.exit_code;
@@ -83,13 +83,13 @@ struct optional_port switch_look_table(struct device_switch* swtch, struct mac m
 {
     struct optional_port port = table_commutation_lookup(swtch->table_commutation, mac);
 
-    if(port.exit_code != SUCESS)
+    if(port.exit_code != SUCCESS)
     {
         DEBUG_WARNING(port.exit_code);
         return (struct optional_port){INVALID_PORT, port.exit_code};
     }
 
-    return (struct optional_port){port.port, SUCESS};
+    return (struct optional_port){port.port, SUCCESS};
 }
 
 /**

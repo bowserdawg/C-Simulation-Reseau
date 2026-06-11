@@ -154,7 +154,7 @@ struct optional_tram init_trame(size_t data_size, const void *data,
     ftr->FCS[2] = (crc >> 16) & 0xFF;
     ftr->FCS[3] = (crc >> 24) & 0xFF;
 
-    return (struct optional_tram){.tr = tr, .exit_code = SUCESS};
+    return (struct optional_tram){.tr = tr, .exit_code = SUCCESS};
 }
 
 /**
@@ -174,7 +174,7 @@ struct optional_tram trame_copy(const struct trame src)
     memcpy(copy.trame, src.trame, src.size);
     copy.size = src.size;
 
-    return (struct optional_tram) { .tr = copy, .exit_code = SUCESS};
+    return (struct optional_tram) { .tr = copy, .exit_code = SUCCESS};
 }
 
 /**   
@@ -328,7 +328,7 @@ enum EXIT_CODES trame_to_hex(struct trame tr, char** string)
                  (i < tr.size - 1) ? ' ' : '\0');
     }
 
-    return SUCESS;
+    return SUCCESS;
 }
 
 /**
@@ -430,7 +430,7 @@ enum EXIT_CODES trame_to_hex_ansi(struct trame tr, char** string)
 
     hex[offset_hex] = '\0';
     *string = hex;
-    return SUCESS;
+    return SUCCESS;
 }
 
 

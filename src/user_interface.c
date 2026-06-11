@@ -3,7 +3,8 @@
 #include "net_graph.h"
 #include "networking_logic.h"
 #include "neighbourhood_creep.h"
-
+#include "user_interface.h"
+#include "networking_logic.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -160,7 +161,7 @@ static void c_exit()
 static void c_display(struct net_graph* graph) 
 {
     enum EXIT_CODES ex = network_display(graph);
-    if(ex != SUCESS)
+    if(ex != SUCCESS)
     {
         DEBUG_WARNING(ex);
         fprintf(stderr, "Error while displaying network.\n");
@@ -185,13 +186,17 @@ static void c_send(struct net_graph* graph, struct neighbourhood* nei)
 
     if(idx1 >= graph->nb_devices || idx2 >= graph->nb_devices)
     {
-        fprintf(stderr, "Error: indexes must be bewteen 0 and %zu\n", graph->nb_devices);
+        fprintf(stderr, "Error: indexes must be bewteen 0 and %zu\n", graph->nb_devices-1);
         return;
     }
 
 
     size_t size = strlen(fourth);
     user_queues_packet(graph, nei, idx1, idx2, fourth, size, 20);
+}
+static void c_dtrame(struct neighbourhood* neighbourhood)
+{
+    display_trames(neighbourhood);
 }
 
 /****Fonctions d'aides****/
@@ -243,6 +248,10 @@ static void parse_commands(int count, struct net_graph* graph, struct neighbourh
             return;
         c_display(graph);
     }
+    else if(is_equal_str(first, "dtrame"))
+    {
+        c_dtrame(neighbourhood);
+    }
 
     // Attends 2 arguments
     else if(is_equal_str(first, "bp")) 
@@ -292,7 +301,7 @@ static void display_infos()
  */
 enum EXIT_CODES user_loop(struct net_graph graph, struct neighbourhood * neighbourhood)
 {
-    enum EXIT_CODES ex_code = SUCESS;
+    enum EXIT_CODES ex_code = SUCCESS;
     display_infos();
 
     while(!program_should_close())

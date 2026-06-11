@@ -72,7 +72,7 @@ struct optional_octet ip_get_octet(struct ip ip, enum OCTET_IP octet)
 
     return (struct optional_octet) {
         _getOctet(ip.ip, octet * 8), 
-        SUCESS
+        SUCCESS
     };
 }
 
@@ -106,7 +106,7 @@ enum EXIT_CODES ip_to_string(char** string, struct ip ip)
     // Vu qu'on à utilisé calloc, le terminateur null existe deja! C'est pratique.
     snprintf(*string, IP_STRING_MAX_SIZE, "%d.%d.%d.%d", o1, o2, o3, o4);
 
-    return SUCESS;
+    return SUCCESS;
 }
 
 
@@ -124,7 +124,7 @@ enum EXIT_CODES ip_to_string(char** string, struct ip ip)
  */
 struct optional_ip ip_from_string(const char* ip_string)
 {
-    enum EXIT_CODES ex_code = SUCESS;
+    enum EXIT_CODES ex_code = SUCCESS;
 
     if(ip_string == NULL)
     {

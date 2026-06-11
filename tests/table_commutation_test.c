@@ -7,7 +7,7 @@ void test_table_commutation()
 {
     struct optional_table_commutation op_tc = init_table_commutation(100);
     DEBUG_WARNING(op_tc.exit_code);
-    DEBUG_ASSERT_W_MESSAGE(op_tc.exit_code == SUCESS, "FAIL init_table_commutation had an error\n");
+    DEBUG_ASSERT_W_MESSAGE(op_tc.exit_code == SUCCESS, "FAIL init_table_commutation had an error\n");
 
     struct table_commutation table = op_tc.table;
 

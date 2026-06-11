@@ -44,9 +44,9 @@ void test_trame()
 
     // Convertir en string
     char* d_mac_str = NULL;
-    DEBUG_ASSERT_W_MESSAGE(mac_to_string(&d_mac_str, d) == SUCESS, "FAIL mac to string operation failed\n");
+    DEBUG_ASSERT_W_MESSAGE(mac_to_string(&d_mac_str, d) == SUCCESS, "FAIL mac to string operation failed\n");
     char* s_mac_str = NULL;
-    DEBUG_ASSERT_W_MESSAGE(mac_to_string(&s_mac_str, s) == SUCESS, "FAIL mac to string operation failed\n");
+    DEBUG_ASSERT_W_MESSAGE(mac_to_string(&s_mac_str, s) == SUCCESS, "FAIL mac to string operation failed\n");
 
     /// TODO : Ajouter une fonction "get_protocol_name";
     DEBUG_ASSERT_W_MESSAGE(strcmp(d_mac_str, "FF:FF:FF:FF:FF:FF") == 0, "FAIL dest mac address strings should have been equal\n");
@@ -80,13 +80,13 @@ void test_trame()
     DEBUG_ASSERT_W_MESSAGE(trame_is_fcs_valid(tr.tr) == true, "FAIL incorrect fcs\n");
 
     char* rep_hex = NULL;
-    DEBUG_ASSERT_W_MESSAGE(trame_to_hex(tr.tr, &rep_hex) == SUCESS, "FAIL trame to hex failed\n");
+    DEBUG_ASSERT_W_MESSAGE(trame_to_hex(tr.tr, &rep_hex) == SUCCESS, "FAIL trame to hex failed\n");
 
     DEBUG_ASSERT_W_MESSAGE(strcmp(trame_get_colored_legend(), TRAME_LEGENDE_COPIE) == 0, "FAIL dest mac address strings should have been equal\n");
 
     /* La trame colorié */
     char* colored = NULL;
-    DEBUG_ASSERT_W_MESSAGE( trame_to_hex_ansi(tr.tr, &colored) == SUCESS, "FAIL trame to hex ANSI failed\n");
+    DEBUG_ASSERT_W_MESSAGE( trame_to_hex_ansi(tr.tr, &colored) == SUCCESS, "FAIL trame to hex ANSI failed\n");
     
     free(rep_hex);
     rep_hex = NULL;

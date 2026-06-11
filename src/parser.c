@@ -30,7 +30,7 @@ static enum EXIT_CODES parse_mac(const char *s, unsigned char mac[6])
         if (b[i] > 0xFF) return -1;
         mac[i] = (unsigned char)b[i];
     }
-    return SUCESS;
+    return SUCCESS;
 }
  
 /* "A.B.C.D" en ip[4]. Retourne SUCCESS si tous ce passe bien. */
@@ -45,7 +45,7 @@ static enum EXIT_CODES parse_ip(const char *s, unsigned char ip[4])
         if (b[i] > 255) return -1;
         ip[i] = (unsigned char)b[i];
     }
-    return SUCESS;
+    return SUCCESS;
 }
 
 /* Pour effacer les '\r' and '\n' à la fin d'une ligne. */
@@ -78,7 +78,7 @@ static void chomp(char *line)
  */
 enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
 {
-    enum EXIT_CODES ex_code = SUCESS;
+    enum EXIT_CODES ex_code = SUCCESS;
 
                                        /* Entete */
     /*************************************************************************************/
@@ -123,7 +123,7 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
     }
 
     struct optional_net_graph op_net = init_net_graph(n_devices);
-    if(op_net.exit_code != SUCESS)
+    if(op_net.exit_code != SUCCESS)
     {
         fclose(file);
         ex_code = op_net.exit_code;
@@ -187,13 +187,13 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
             }
 
             // Les addresses 
-            if (parse_mac(mac_str, mac) != SUCESS)
+            if (parse_mac(mac_str, mac) != SUCCESS)
             {
                 fprintf(stderr, "%s: incorrect MAC format in station line: '%s'\n", G_APP_NAME, line);
                 ex_code = ERROR_PARSING_FORMAT_DEVICES;
                 goto end;
             }
-            if (parse_ip(ip_str, ip) != SUCESS) 
+            if (parse_ip(ip_str, ip) != SUCCESS) 
             {
                 fprintf(stderr, "%s: incorrect IP format in station line: '%s'\n", G_APP_NAME, line);
                 ex_code = ERROR_PARSING_FORMAT_DEVICES;
@@ -225,7 +225,7 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
             }
 
             // L'addresse mac 
-            if (parse_mac(mac_str, mac) != SUCESS)
+            if (parse_mac(mac_str, mac) != SUCCESS)
             {
                 fprintf(stderr, "%s: incorrect MAC format in station line: '%s'\n", G_APP_NAME, line);
                 ex_code = ERROR_PARSING_FORMAT_DEVICES;
@@ -238,7 +238,7 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
             priority_t prio = (priority_t)atoi(pri_str);
             
             struct optional_device_switch swtch = init_switch(ad_mac, nb_port, prio);
-            if (swtch.exit_code != SUCESS)
+            if (swtch.exit_code != SUCCESS)
             {
                 fprintf(stderr, "%s: init_switch failed.\n", G_APP_NAME);
                 ex_code = swtch.exit_code;
@@ -289,7 +289,7 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
 
         /* Ajout d'aretes */
         ex_code = net_graph_add_node(graph, first, second, cost);
-        if(ex_code != SUCESS)
+        if(ex_code != SUCCESS)
         {
             fprintf(stderr, "%s: Adding node operation failed\n", G_APP_NAME);
             // ex_code deja mise à jour
@@ -299,7 +299,7 @@ enum EXIT_CODES parse_config(const char* path, struct net_graph* graph)
     }
 
     end:
-    if(ex_code != SUCESS) 
+    if(ex_code != SUCCESS) 
     {
         if(graph) deinit_graph(graph);
         DEBUG_WARNING(ex_code);

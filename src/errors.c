@@ -20,7 +20,7 @@ static void error_printer(enum EXIT_CODES error)
 {
     switch (error)
     {
-    case SUCESS:
+    case SUCCESS:
         fprintf(stderr, "Success\n");
         break;
     case ERR_INVALID_OCTET_PARAM:
@@ -164,7 +164,7 @@ static void error_show_warning_location(const char* file, const char* func, int 
 void error_diagnostic_abort(enum EXIT_CODES exit_code, 
     const char* file, const char* func, int line)
 {
-    if(exit_code < SUCESS)
+    if(exit_code < SUCCESS)
     {
         error_show_error_location(file, func, line);
         error_printer(exit_code);
@@ -178,7 +178,7 @@ void error_diagnostic_abort(enum EXIT_CODES exit_code,
 void error_warning_diagnostic(enum EXIT_CODES exit_code, 
     const char* file, const char* func, int line)
 {
-    if(exit_code < SUCESS)
+    if(exit_code < SUCCESS)
     {
         error_show_warning_location(file, func, line);
         error_printer(exit_code);

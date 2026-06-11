@@ -17,17 +17,55 @@
 #define DEFAULT_PROT 0x0806
 
 /**
+ * Montres les trames dans le réseau avec du couleur et une légende à la fin.
+ */
+void display_trames(struct neighbourhood* container)
+{
+    const size_t len = neighbourhood_get_len(container);
+
+    size_t num_user = 0;
+    for(size_t i = 0; i < len; ++i)
+    {
+        if(neighbourhood_is_present(container, i))
+        {
+            struct optional_tram tram_op = neighbourhood_get_trame(container, i);
+            if(tram_op.exit_code != SUCCESS)
+            {
+                DEBUG_WARNING(tram_op.exit_code);
+                fprintf(stderr, "Error : couldn't display trames.\n");
+                return;
+            }
+
+            char* colored;
+            enum EXIT_CODES ex = trame_to_hex_ansi(tram_op.tr, &colored);
+            if(ex != SUCCESS)
+            {
+                DEBUG_WARNING(ex);
+                fprintf(stderr, "Error : couldn't display trames.\n");
+                return;
+            }
+            fprintf(stderr, "Trame%zu %zu \n%s\n\n", num_user,i,colored);
+            free(colored);
+            num_user++;
+        }
+    }
+
+    // Envoie une chaine statique montrant la légende
+    fprintf(stderr, "%s", trame_get_colored_legend());
+}
+
+/**
  * Montre l'état actuel du réseau.
  */
 enum EXIT_CODES network_display(struct net_graph* graph)
 {
-    enum EXIT_CODES ex_code = SUCESS;
+    enum EXIT_CODES ex_code = SUCCESS;
 
     for(size_t i = 0; i < graph->nb_devices; ++i)
     {
         struct optional_device op_dev = net_graph_get_machine(graph, i);
         
-        if(op_dev.exit_code != SUCESS)
+        if(op_dev.exit_code != SUCCESS)
         {
             DEBUG_WARNING(op_dev.exit_code);
             return op_dev.exit_code;
@@ -39,13 +77,13 @@ enum EXIT_CODES network_display(struct net_graph* graph)
             char* mac_str = NULL;
             
             ex_code = ip_to_string(&ip_str, op_dev.device->d_station.ip);
-            if(ex_code != SUCESS)
+            if(ex_code != SUCCESS)
             {
                 DEBUG_WARNING(ex_code);
                 return ex_code;
             }
             ex_code = mac_to_string(&mac_str, op_dev.device->d_station.mac);
-            if(ex_code != SUCESS)
+            if(ex_code != SUCCESS)
             {
                 DEBUG_WARNING(ex_code);
                 free(ip_str);
@@ -62,7 +100,7 @@ enum EXIT_CODES network_display(struct net_graph* graph)
             struct device_switch* swtch = &op_dev.device->d_switch;
             char* mac_str = NULL;
             ex_code = mac_to_string(&mac_str, swtch->_mac);
-            if(ex_code != SUCESS)
+            if(ex_code != SUCCESS)
             {
                 DEBUG_WARNING(ex_code);
                 return ex_code;
@@ -113,11 +151,11 @@ static struct optional_mac get_mac_from_device(union device* device, enum DEVICE
 
     if(type == STATION)
     {
-        return (struct optional_mac){ .mac = device->d_station.mac, .exit_code = SUCESS};
+        return (struct optional_mac){ .mac = device->d_station.mac, .exit_code = SUCCESS};
     }
     if(type == SWITCH)
     {
-        return (struct optional_mac){ .mac = device->d_switch._mac, .exit_code = SUCESS};
+        return (struct optional_mac){ .mac = device->d_switch._mac, .exit_code = SUCCESS};
     }
     return (struct optional_mac){ .mac = {{0}}, .exit_code = WARNING_ITEM_NOT_FOUND};
 }
@@ -129,7 +167,7 @@ static void queue_packet(struct net_graph* graph, struct neighbourhood* containe
 {
     // init_trame fait une copie du data
     struct optional_tram tram_op = init_trame(data_size, data, dest_mac, src_mac, DEFAULT_PROT);
-    if(tram_op.exit_code != SUCESS)
+    if(tram_op.exit_code != SUCCESS)
     {
         DEBUG_WARNING(tram_op.exit_code);
         return;
@@ -138,15 +176,15 @@ static void queue_packet(struct net_graph* graph, struct neighbourhood* containe
     // Ajouter dans le container.
     enum EXIT_CODES ex_code = neighbourhood_push_trame(container, &tram_op.tr, cost, p_dest_idx, p_src_idx);
     
-    if(ex_code == SUCESS)
+    if(ex_code == SUCCESS)
     {
         char* mac_dst = NULL;
-        if(mac_to_string(&mac_dst, dest_mac) != SUCESS)
+        if(mac_to_string(&mac_dst, dest_mac) != SUCCESS)
         {
             return;
         }
         char* mac_src = NULL;
-        if(mac_to_string(&mac_src, src_mac) != SUCESS)
+        if(mac_to_string(&mac_src, src_mac) != SUCCESS)
         {
             free(mac_dst);
             return;
@@ -189,13 +227,13 @@ void user_queues_packet(struct net_graph* graph, struct neighbourhood* container
 
     // get les device
     struct optional_device src_dev = net_graph_get_machine(graph, src_idx);
-    if(src_dev.exit_code != SUCESS)
+    if(src_dev.exit_code != SUCCESS)
     {
         DEBUG_WARNING(src_dev.exit_code);
         return;
     }
     struct optional_device dest_dev = net_graph_get_machine(graph, dest_idx);
-    if(dest_dev.exit_code != SUCESS)
+    if(dest_dev.exit_code != SUCCESS)
     {
         DEBUG_WARNING(dest_dev.exit_code);
         return;
@@ -203,13 +241,13 @@ void user_queues_packet(struct net_graph* graph, struct neighbourhood* container
 
     // get les mac
     struct optional_mac src_mac = get_mac_from_device(src_dev.device, src_dev.type);
-    if(src_mac.exit_code != SUCESS) 
+    if(src_mac.exit_code != SUCCESS) 
     {
         DEBUG_WARNING(src_mac.exit_code);
         return;
     }
     struct optional_mac dest_mac = get_mac_from_device(dest_dev.device, dest_dev.type);
-    if(dest_mac.exit_code != SUCESS)
+    if(dest_mac.exit_code != SUCCESS)
     {
         DEBUG_WARNING(dest_mac.exit_code);
         return;
@@ -247,7 +285,7 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
         if(neighbourhood_is_present(container, i))
         {
             struct optional_tick time = neighbourhood_decrease_time(container, i);
-            if(time.exit_code != SUCESS)
+            if(time.exit_code != SUCCESS)
             {
                 DEBUG_WARNING(time.exit_code);
                 continue;
@@ -256,7 +294,7 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
             if(!time.time)
             {
                 struct optional_tram tram_op = neighbourhood_get_trame(container, i);
-                if(tram_op.exit_code != SUCESS)
+                if(tram_op.exit_code != SUCCESS)
                 {
                     DEBUG_WARNING(tram_op.exit_code);
                     continue;
@@ -266,7 +304,7 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
                 struct mac mac_source = trame_get_source(tram_op.tr);
 
                 struct optional_device dev = net_graph_get_device_from_mac(graph, mac_source);
-                if(dev.exit_code != SUCESS)
+                if(dev.exit_code != SUCCESS)
                 {
                     DEBUG_WARNING(dev.exit_code);
                     continue;
@@ -280,12 +318,12 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
                     size_t p_dest_idx = neighbourhood_get_dest(container, i);
 
                     char* mac_dst = NULL;
-                    if(mac_to_string(&mac_dst, mac_dest) != SUCESS)
+                    if(mac_to_string(&mac_dst, mac_dest) != SUCCESS)
                     {
                         continue;
                     }
                     char* mac_src = NULL;
-                    if(mac_to_string(&mac_src, mac_source) != SUCESS)
+                    if(mac_to_string(&mac_src, mac_source) != SUCCESS)
                     {
                         free(mac_dst);
                         continue;
@@ -323,7 +361,7 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
 
                     // Voir si la destination est dans la table.
                     struct optional_port port_op = table_commutation_lookup(dev.device->d_switch.table_commutation, mac_dest);
-                    if(port_op.exit_code != SUCESS)
+                    if(port_op.exit_code != SUCCESS)
                     {
                         DEBUG_WARNING(port_op.exit_code);
                         free(indexes);

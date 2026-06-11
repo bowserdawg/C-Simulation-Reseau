@@ -12,7 +12,7 @@ void test_ip()
 
 
     struct optional_ip ip2 = ip_from_string("192.12.10.0");
-    DEBUG_ASSERT_W_MESSAGE(ip2.exit_code == SUCESS, "FAIL ip2 optional\n");
+    DEBUG_ASSERT_W_MESSAGE(ip2.exit_code == SUCCESS, "FAIL ip2 optional\n");
 
     DEBUG_ASSERT_W_MESSAGE(ip1.ip == ip2.ip.ip, "FAIL ip1.ip == ip2.ip.ip\n");
 

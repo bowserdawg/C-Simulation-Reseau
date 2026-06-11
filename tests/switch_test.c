@@ -13,7 +13,7 @@ void test_switch()
     struct optional_device_switch swtch = init_switch(mac, nb_port, priority);
 
     // Test pour voire si le switch est bien initalisé.
-    DEBUG_ASSERT_W_MESSAGE(swtch.exit_code == SUCESS, "FAIL Switch initalisation failed\n");
+    DEBUG_ASSERT_W_MESSAGE(swtch.exit_code == SUCCESS, "FAIL Switch initalisation failed\n");
 
     // test pour voire si le nombre de port est correcte.
     DEBUG_ASSERT_W_MESSAGE(swtch.dev_switch._nbPort == nb_port, "FAIL bad number of ports\n");
@@ -30,9 +30,9 @@ void test_switch()
     port_t thePort = 1;
 
     // Test ajout
-    DEBUG_ASSERT_W_MESSAGE(switch_add_table(&swtch.dev_switch, thePort, mac2) == SUCESS, "FAIL entry couldn't be added\n");
+    DEBUG_ASSERT_W_MESSAGE(switch_add_table(&swtch.dev_switch, thePort, mac2) == SUCCESS, "FAIL entry couldn't be added\n");
     // Test lookup
-    DEBUG_ASSERT_W_MESSAGE(switch_look_table(&swtch.dev_switch, mac2).exit_code == SUCESS, "FAIL entry should be found in table.\n");
+    DEBUG_ASSERT_W_MESSAGE(switch_look_table(&swtch.dev_switch, mac2).exit_code == SUCCESS, "FAIL entry should be found in table.\n");
     DEBUG_ASSERT_W_MESSAGE(switch_look_table(&swtch.dev_switch, mac2).port != INVALID_PORT, "FAIL port number should have been valid.\n");
     // Test lookup invalid
     DEBUG_ASSERT_W_MESSAGE(switch_look_table(&swtch.dev_switch, mac).port == INVALID_PORT , "FAIL port number should have been invalid.\n");

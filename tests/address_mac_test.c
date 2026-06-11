@@ -12,7 +12,7 @@ void test_mac()
     struct optional_mac op_mac = mac_from_str("C0:A8:BB:7B:10:59");
     // Test si mac_from_str pour savoir si aucune erreurs se produisent.
     DEBUG_WARNING(op_mac.exit_code);
-    DEBUG_ASSERT_W_MESSAGE(op_mac.exit_code == SUCESS, "FAIL mac_from_str\n");
+    DEBUG_ASSERT_W_MESSAGE(op_mac.exit_code == SUCCESS, "FAIL mac_from_str\n");
 
     // Test si les deux adresses mac obtenu avec deux fonctions différents sont les memes
     for(size_t i = 0; i < MAC_NB_OCTET; ++i)
@@ -24,7 +24,7 @@ void test_mac()
     enum EXIT_CODES ex = mac_to_string(&string1, mac1);
     // Test si une adresse mac peut etre correctment convertie en chaine de caractere.
     DEBUG_WARNING(ex);
-    DEBUG_ASSERT_W_MESSAGE(ex == SUCESS, "FAIL mac_to_string error code\n");
+    DEBUG_ASSERT_W_MESSAGE(ex == SUCCESS, "FAIL mac_to_string error code\n");
 
     char* string2 = NULL;
     ex = mac_to_string(&string2, op_mac.mac);
@@ -34,7 +34,7 @@ void test_mac()
     struct optional_mac op1 = mac_from_str(string1);
     struct optional_mac op2 = mac_from_str(string2);
     // Test si la fonction mac_from_str fonctionne correctement sans erreur
-    DEBUG_ASSERT_W_MESSAGE(op1.exit_code == SUCESS && op2.exit_code == SUCESS, "FAIL Unsuccessful mac_from_str.\n");
+    DEBUG_ASSERT_W_MESSAGE(op1.exit_code == SUCCESS && op2.exit_code == SUCCESS, "FAIL Unsuccessful mac_from_str.\n");
     
     // Test si les deux adresses mac obtenu avec la meme fonction (mac_from_str) sont les memes
     for(size_t i = 0; i < MAC_NB_OCTET; ++i)
@@ -44,15 +44,15 @@ void test_mac()
 
     // Test erreur de formattage
     struct optional_mac op_mac_fin = mac_from_str("C00:A8:BB:7B:10:59");
-    DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCESS, "FAIL mac_from_str should have given an error\n");
+    DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCCESS, "FAIL mac_from_str should have given an error\n");
     op_mac_fin = mac_from_str("C0A8:BB:7B:10:59");
-    DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCESS, "FAIL mac_from_str should have given an error\n");
+    DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCCESS, "FAIL mac_from_str should have given an error\n");
     op_mac_fin = mac_from_str("C0:BB:7BI:10:59");
-    DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCESS, "FAIL mac_from_str should have given an error\n");
+    DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCCESS, "FAIL mac_from_str should have given an error\n");
     op_mac_fin = mac_from_str("C0:BB:7B:1001:59");
-    DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCESS, "FAIL mac_from_str should have given an error\n");
+    DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCCESS, "FAIL mac_from_str should have given an error\n");
     op_mac_fin = mac_from_str("C0:BB:7I:10:5JU9");
-    DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCESS, "FAIL mac_from_str should have given an error\n");
+    DEBUG_ASSERT_W_MESSAGE(op_mac_fin.exit_code != SUCCESS, "FAIL mac_from_str should have given an error\n");
 
     op_mac_fin = mac_from_str(NULL);
     // Tester si les arguments null peuvent etre géré 

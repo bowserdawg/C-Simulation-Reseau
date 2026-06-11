@@ -69,7 +69,7 @@ enum EXIT_CODES mac_to_string(char** string, struct mac mac)
 
     *string = new_str;
     
-    return SUCESS;
+    return SUCCESS;
 }
 
 struct mac mac_operation_and(struct mac mac, struct mac mask)
@@ -133,7 +133,7 @@ struct optional_mac mac_from_str(const char* mac_str)
     {   
         for (size_t i = 0; i < MAC_NB_OCTET; i++)
             new_mac.mac_array[i] = (octet_mac_t)bytes[i]; // Cast en octet de mac (uint8)
-        return (struct optional_mac){new_mac, SUCESS};
+        return (struct optional_mac){new_mac, SUCCESS};
     }
 
     DEBUG_WARNING(ERROR_INVALID_STRING_FORMAT);
