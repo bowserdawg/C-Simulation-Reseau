@@ -215,7 +215,7 @@ static void queue_packet(struct neighbourhood* container,
 /**
  * L'utilisateur envoie un paquet avec cette fonction.
  */
-void user_queues_packet(struct net_graph* graph, struct neighbourhood* container, size_t src_idx, size_t dest_idx, const char* data, size_t data_size, cost_t cost)
+void user_queues_packet(struct net_graph* graph, struct neighbourhood* container, size_t src_idx, size_t dest_idx, const char* data, size_t data_size)
 {
     // Check si l'index de machine est correcte
     if(graph->nb_devices <= src_idx || graph->nb_devices <= dest_idx)
@@ -242,7 +242,7 @@ void user_queues_packet(struct net_graph* graph, struct neighbourhood* container
 
     // get les mac
     struct optional_mac src_mac = get_mac_from_device(src_dev.device, src_dev.type);
-    if(src_mac.exit_code != SUCCESS) 
+    if(src_mac.exit_code != SUCCESS)
     {
         DEBUG_WARNING(src_mac.exit_code);
         return;
@@ -253,21 +253,20 @@ void user_queues_packet(struct net_graph* graph, struct neighbourhood* container
         DEBUG_WARNING(dest_mac.exit_code);
         return;
     }
-    
 
-    size_t* indexes;
+    size_t* indexes = NULL;
     size_t nb_indexes = net_graph_surrounding_indexes(graph, &indexes, src_idx);
     if(nb_indexes == INVALID_INDEX)
     {
         DEBUG_WARNING(ERROR_UNREACHABLE_STATE);
         fprintf(stderr, "Fetching indexes failed\n");
-        free(indexes);
         return;
     }
 
     for(size_t i = 0; i < nb_indexes; ++i)
     {
-        queue_packet(container, dest_mac.mac, src_mac.mac, indexes[i] , src_idx, cost, data, data_size);
+        cost_t cost = net_graph_get_cost_from_two_indexes(graph, src_idx, indexes[i]);
+        queue_packet(container, dest_mac.mac, src_mac.mac, indexes[i], src_idx, cost, data, data_size);
     }
 
     free(indexes);
@@ -348,7 +347,9 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
                 struct mac mac_dest = trame_get_destination(tram_op.tr);
                 struct mac mac_source = trame_get_source(tram_op.tr);
 
-                struct optional_device dev = net_graph_get_device_from_mac(graph, mac_source);
+                // Look up the device that physically received the frame, not the sender.
+                size_t dest_new_src = neighbourhood_get_dest(container, i);
+                struct optional_device dev = net_graph_get_machine(graph, dest_new_src);
                 if(dev.exit_code != SUCCESS)
                 {
                     DEBUG_WARNING(dev.exit_code);
@@ -357,20 +358,25 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
 
                 display_arrived(container, mac_dest, mac_source, i, dev.type);
 
-                // Si la machine source destination est une station, c'est fini, le payload est arrivé à la maison.
-                // On met un body quand meme si on veut rajouter des features dans le future.
+                // Si la machine destination est une station, le payload est arrivé à destination.
                 if(dev.type == STATION)
                 {
-                    
+
                 }
                 // Sinon, le switch se gère de router le paquet.
                 else if(dev.type == SWITCH)
                 {
                     // Destinations physiques et non mac
-                    size_t dest_new_src = neighbourhood_get_dest(container, i);
                     size_t sender       = neighbourhood_get_src(container, i);
-                    size_t* indexes;
+                    size_t* indexes = NULL;
                     size_t nb_indexes = net_graph_surrounding_indexes(graph, &indexes, dest_new_src);
+                    if(nb_indexes == INVALID_INDEX)
+                    {
+                        DEBUG_WARNING(ERROR_UNREACHABLE_STATE);
+                        free(indexes);
+                        neighbourhood_pop_trame(container, i);
+                        continue;
+                    }
                     port_t sent_port_index = INVALID_PORT;
                     for(port_t j = 0; j < nb_indexes; ++j)
                     {
@@ -398,10 +404,16 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
                     size_t copy_data_size = trame_get_data(tram_op.tr, &data);
 
                     // Si l'adresse mac est dans la table de lookup
-                    if(port_op.port != INVALID_INDEX)
+                    if(port_op.port != INVALID_PORT)
                     {
-                        // Unicast
-                        cost_t new_cost  =     net_graph_get_cost_from_two_indexes(graph, dest_new_src, port_op.port);
+                        // Unicast: port_op.port is an index into indexes[], not a node index
+                        if(port_op.port >= nb_indexes)
+                        {
+                            free(indexes);
+                            continue;
+                        }
+                        size_t dest_node_idx = indexes[port_op.port];
+                        cost_t new_cost = net_graph_get_cost_from_two_indexes(graph, dest_new_src, dest_node_idx);
                         if(new_cost == COST_MAX)
                         {
                             fprintf(stderr, "Couldn't find the copy cost\n");
@@ -411,7 +423,7 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
 
                         // "la destination est la nouvelle source"
                         // Crée une nouvelle trame, le data va etre copier
-                        queue_packet(container, mac_dest, mac_source, port_op.port, dest_new_src, new_cost, data, copy_data_size);
+                        queue_packet(container, mac_dest, mac_source, dest_node_idx, dest_new_src, new_cost, data, copy_data_size);
                     }
                     // Sinon, on flood
                     else
@@ -433,8 +445,50 @@ void network_handle_tick(struct net_graph* graph, struct neighbourhood* containe
                 }
                 // Deinit l'acien tram pour de bon, AVEC UN POP ET NON UN DEINIT TRAME
                 neighbourhood_pop_trame(container, i);
-            }  
+            }
         }
 
     }
+}
+
+enum EXIT_CODES network_display_mac_tables(struct net_graph* graph)
+{
+    struct mac empty = {{0}};
+    bool any_switch = false;
+
+    for(size_t i = 0; i < graph->nb_devices; ++i)
+    {
+        struct optional_device op = net_graph_get_machine(graph, i);
+        if(op.exit_code != SUCCESS || op.type != SWITCH)
+            continue;
+
+        any_switch = true;
+        struct table_commutation* table = &op.device->d_switch.table_commutation;
+
+        fprintf(stderr, "Switch %zu  (%zu filled entries):\n", i, table->nb_elems);
+
+        size_t printed = 0;
+        for(size_t j = 0; j < table->size; ++j)
+        {
+            if(mac_equals(table->data[j].addrs, empty))
+                continue;
+
+            char* mac_str = NULL;
+            if(mac_to_string(&mac_str, table->data[j].addrs) != SUCCESS)
+                continue;
+
+            fprintf(stderr, "  %-17s  ->  port %zu\n", mac_str, table->data[j].nbPort);
+            free(mac_str);
+            printed++;
+        }
+
+        if(printed == 0)
+            fprintf(stderr, "  (empty)\n");
+        fprintf(stderr, "\n");
+    }
+
+    if(!any_switch)
+        fprintf(stderr, "No switches in the network.\n");
+
+    return SUCCESS;
 }

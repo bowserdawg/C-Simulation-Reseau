@@ -10,6 +10,7 @@ void test_net_graph();
 void test_parser();
 void test_trame();
 void test_neighbourhood_creep();
+void test_simulation();
 
 static void terminal_message(const char* message)
 {
@@ -36,7 +37,8 @@ int main()
     test_trame();
     terminal_message("Starting test_neighbourhood_creep...");
     test_neighbourhood_creep();
-
+    terminal_message("Starting test_simulation...");
+    test_simulation();
 
     return 0;
 }

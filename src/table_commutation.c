@@ -44,10 +44,11 @@ enum EXIT_CODES table_commutation_add(struct table_commutation* table, port_t po
     }
 
     uint64_t num = mac_to_long(address);
-    // Ajoute une nouvelle entrée à la table de commutation, peut écraser les anciennes et c'est ok.
+    struct mac empty = {{0}};
+    if (mac_equals(table->data[num % table->size].addrs, empty))
+        table->nb_elems++;
     table->data[num % table->size] = (struct table_entry){.nbPort = port,
                                                           .addrs  = address};
-    table->nb_elems++;
 
     return SUCCESS;
 }

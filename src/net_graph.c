@@ -395,7 +395,7 @@ size_t net_graph_find_index_from_mac(struct net_graph* graphe, struct mac mac)
 {
     if(!graphe)
     {
-        DEBUG_WARNING(ERROR_BAD_ALLOC);
+        DEBUG_WARNING(ERROR_NULL_POINTER_PARAM);
         return INVALID_INDEX;
     }
 

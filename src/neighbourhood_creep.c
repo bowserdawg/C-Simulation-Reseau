@@ -154,18 +154,19 @@ static enum EXIT_CODES push_trame(struct neighbourhood* neighbourhood,
             DEBUG_WARNING(ERROR_BAD_ALLOC);
             return ERROR_BAD_ALLOC;
         }
-        memcpy(houses, neighbourhood->houses, neighbourhood->len * sizeof(struct house));
-        free(neighbourhood->houses);
-        neighbourhood->houses = houses;
 
         size_t* new_indexes = malloc(sizeof(size_t) * new_cap);
         if (!new_indexes)
         {
+            free(houses);
             DEBUG_WARNING(ERROR_BAD_ALLOC);
-            // houses a déjà été remplacé, on ne peut pas annuler proprement ici
-            neighbourhood->cap = new_cap; // cohérence minimale
             return ERROR_BAD_ALLOC;
         }
+
+        memcpy(houses, neighbourhood->houses, neighbourhood->len * sizeof(struct house));
+        free(neighbourhood->houses);
+        neighbourhood->houses = houses;
+
         memcpy(new_indexes, neighbourhood->creep.indexes,
                neighbourhood->creep.len * sizeof(size_t));
         free(neighbourhood->creep.indexes);

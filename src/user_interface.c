@@ -100,7 +100,7 @@ static int get_inputs()
     memset(second,0, sizeof(second));
     memset(third, 0, sizeof(third) );
     memset(fourth,0, sizeof(fourth));
-    memset(fifth, 0, sizeof(fourth));
+    memset(fifth, 0, sizeof(fifth));
 
     // Pour un meileur affichage input
     fprintf(stderr, ">>$ ");
@@ -127,13 +127,14 @@ static int get_inputs()
 /********COMMANDES*********/
 /**************************/
 
-const char* INSTRUCTIONS = 
+const char* INSTRUCTIONS =
     "\tbp       : Sets a new breakpoint frequency.\n \t\tEx: bp 1000\n"
     "\tcontinue : Continues the program.\n"
     "\texit     : Exits the program.\n"
     "\thelp     : Show these informations.\n"
     "\tdisplay  : Show all the nodes and devices in the network\n"
     "\tdtrame   : Displayed information about trames with a colored legend.\n"
+    "\tmactable : Show all filled MAC entries in every switch table.\n"
     "\tsend     : Envoie un paquet vers une autre machine.\n";
 
 /* Commandes pour l'utilisateur */
@@ -192,11 +193,20 @@ static void c_send(struct net_graph* graph, struct neighbourhood* nei)
 
 
     size_t size = strlen(fourth);
-    user_queues_packet(graph, nei, idx1, idx2, fourth, size, 20);
+    user_queues_packet(graph, nei, idx1, idx2, fourth, size);
 }
 static void c_dtrame(struct neighbourhood* neighbourhood)
 {
     display_trames(neighbourhood);
+}
+static void c_mactable(struct net_graph* graph)
+{
+    enum EXIT_CODES ex = network_display_mac_tables(graph);
+    if(ex != SUCCESS)
+    {
+        DEBUG_WARNING(ex);
+        fprintf(stderr, "Error while displaying MAC tables.\n");
+    }
 }
 
 /****Fonctions d'aides****/
@@ -224,33 +234,39 @@ static bool invalid_args_message(const char* string, int args, int expected)
 static void parse_commands(int count, struct net_graph* graph, struct neighbourhood * neighbourhood)
 {
     // Attends 1 argument
-    if(is_equal_str(first, "help"))         
+    if(is_equal_str(first, "help"))
     {
-        if(invalid_args_message("bp", count, 1))
+        if(invalid_args_message("help", count, 1))
             return;
         c_help();
     }
     else if(is_equal_str(first, "continue"))
     {
-        if(invalid_args_message("bp", count, 1))
+        if(invalid_args_message("continue", count, 1))
             return;
         c_continue();
     }
     else if(is_equal_str(first, "exit"))
-    {    
-        if(invalid_args_message("bp", count, 1))
+    {
+        if(invalid_args_message("exit", count, 1))
             return;
         c_exit();
     }
     else if(is_equal_str(first, "display"))
-    { 
-        if(invalid_args_message("bp", count, 1))
+    {
+        if(invalid_args_message("display", count, 1))
             return;
         c_display(graph);
     }
     else if(is_equal_str(first, "dtrame"))
     {
         c_dtrame(neighbourhood);
+    }
+    else if(is_equal_str(first, "mactable"))
+    {
+        if(invalid_args_message("mactable", count, 1))
+            return;
+        c_mactable(graph);
     }
 
     // Attends 2 arguments

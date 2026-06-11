@@ -144,8 +144,11 @@ bool switch_change_port_status(struct device_switch* swtch, size_t index, enum S
 */
 void deinit_switch(struct device_switch* swtch)
 {
-    if(!swtch) DEBUG_WARNING(WARNING_ITEM_NULL_FREEING);
-    if(!swtch) DEBUG_WARNING(WARNING_ITEM_NULL_FREEING);
+    if(!swtch)
+    {
+        DEBUG_WARNING(WARNING_ITEM_NULL_FREEING);
+        return;
+    } 
     if(!swtch->port_status) DEBUG_WARNING(WARNING_ITEM_NULL_FREEING);
 
     deinit_table_commutation(&swtch->table_commutation);
